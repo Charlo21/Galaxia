@@ -1,5 +1,13 @@
 {
+  "name": "galaxia-game",
+  "version": "1.0.0",
+  "description": "A 3D web game featuring unique characters",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve",
+    "build": "echo 'No build step required'"
+  },
   "dependencies": {
-    "mongodb": "^6.10.0"
+    "three": "^0.132.2"
   }
 }
