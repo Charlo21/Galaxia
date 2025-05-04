@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxia Reset</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            background-image: url('./assets/Images/backgrounds/Jean-Baptiste Monge Inspired Nebula.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            border: 2px solid #4169E1;
+        }
+        
+        h1 {
+            color: #4169E1;
+            margin-top: 0;
+        }
+        
+        p {
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background-color: #4169E1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #1E90FF;
+            transform: scale(1.05);
+        }
+    </style>
+    <script>
+        // Function to clear localStorage and delete all modals
+        function resetGame() {
+            // Clear the key we're having issues with
+            localStorage.removeItem('gameOver');
+            localStorage.removeItem('isGameOver');
+            localStorage.removeItem('showGameOver');
+            
+            // Remove any DOM elements that might be causing problems
+            document.addEventListener('DOMContentLoaded', function() {
+                // Remove all static modals
+                const elements = document.querySelectorAll('.game-over-modal, .modal, [style*="position: fixed"]');
+                elements.forEach(el => el.remove());
+            });
+            
+            alert('Game reset successful! You can now play without the game over message.');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+        
+        // Function to completely reset everything
+        function resetEverything() {
+            // Clear all localStorage
+            localStorage.clear();
+            
+            // Clear cookies
+            document.cookie.split(";").forEach(function(c) {
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+            
+            alert('Complete reset successful! All game data has been cleared.');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Galaxia Reset Tool</h1>
+        <p>This tool will fix the static "Game Over" message that appears on the game.</p>
+        <p>Use the "Reset Game" button to remove just the game over message, or "Reset Everything" to clear all game data.</p>
+        
+        <button onclick="resetGame()">Reset Game</button>
+        <button onclick="resetEverything()">Reset Everything</button>
+        
+        <p style="margin-top: 20px; font-size: 14px;">After resetting, the game will automatically reload.</p>
+    </div>
+</body>
+</html>

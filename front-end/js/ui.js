@@ -1,36 +1,40 @@
-let score = 0;
-const scoreDisplay = document.getElementById('score');
+// UI functions
+function showMessage(message, duration = 2000) {
+    const messageElement = document.createElement('div');
+    messageElement.className = 'game-message';
+    messageElement.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 15px 30px;
+        border-radius: 5px;
+        z-index: 1000;
+        animation: slideDown 0.5s ease-out;
+    `;
+    messageElement.textContent = message;
+    document.body.appendChild(messageElement);
 
-// Update score when attack is performed
-function updateScore() {
-    score += 10; // Add 10 points per attack
-    scoreDisplay.innerText = `Score: ${score}`;
+    setTimeout(() => {
+        messageElement.style.animation = 'slideUp 0.5s ease-out';
+        setTimeout(() => messageElement.remove(), 500);
+    }, duration);
 }
 
-// Hook the score update to the attack function
-cat.addEventListener('click', updateScore);
-dog.addEventListener('click', updateScore);
-starfighter.addEventListener('click', updateScore);
-
-let timeLeft = 60; // 60 seconds for the game
-const timerDisplay = document.getElementById('timer');
-
-// Function to update the timer
-function updateTimer() {
-    if (timeLeft > 0) {
-        timeLeft--;
-        timerDisplay.innerText = `Time Left: ${timeLeft}s`;
-    } else {
-        endGame();
+// Add CSS for animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideDown {
+        from { transform: translate(-50%, -50px); opacity: 0; }
+        to { transform: translate(-50%, 0); opacity: 1; }
     }
-}
-
-// Start the timer countdown
-setInterval(updateTimer, 1000); // Call every 1 second
-
-// Function to end the game when time is up
-function endGame() {
-    alert('Game Over! Your final score is: ' + score);
-    location.reload(); // Reload the game (or handle restart)
+    @keyframes slideUp {
+        from { transform: translate(-50%, 0); opacity: 1; }
+        to { transform: translate(-50%, -50px); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);    location.reload(); // Reload the game (or handle restart)
 }
 

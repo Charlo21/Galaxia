@@ -72,20 +72,30 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Loading models...');
     async function loadModels() {
         try {
+            // Debug message to track path issues
+            console.log('Attempting to load models from:', './assets/models/tibetan_mastiff.glb');
+            
+            // Load with absolute paths to ensure they work in all environments
             await Promise.all([
-                renderer.loadModel('tibetanMastiff', 'assets/models/tibetan_mastiff.glb'),
-                renderer.loadModel('sumatranTiger', 'assets/models/sumatran_tiger.glb'),
-                renderer.loadModel('galaxyShip', 'assets/models/spaceship.glb')
+                renderer.loadModel('tibetanMastiff', './assets/models/tibetan_mastiff.glb'),
+                renderer.loadModel('sumatranTiger', './assets/models/sumatran_tiger.glb'),
+                renderer.loadModel('galaxyShip', './assets/models/spaceship.glb')
             ]);
             
             console.log('Models loaded successfully');
             // Show initial character
             renderer.showCharacter(currentCharacter);
             
-            // Check for daily reward only after models are loaded
+            // Check for daily reward after models are loaded
             setTimeout(() => checkDailyReward(), 1000);
         } catch (error) {
             console.error('Error loading models:', error);
+            // Show error message in the UI
+            const loadingElement = document.getElementById('loading');
+            if (loadingElement) {
+                loadingElement.style.display = 'block';
+                loadingElement.innerHTML = 'Error loading models: ' + error.message + '<br>Please refresh the page.';
+            }
         }
     }
 
