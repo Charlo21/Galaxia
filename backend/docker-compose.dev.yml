@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: galaxia-backend-dev
+    ports:
+      - "3000:3000"
+      - "9229:9229"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/galaxia_dev
+      - JWT_SECRET=your_jwt_secret_here
+      - TON_ENDPOINT=https://testnet.toncenter.com/api/v2/jsonRPC
+      - TON_API_KEY=your_ton_api_key_here
+    depends_on:
+      - mongodb
+    networks:
+      - galaxia-network
+    command: npm run dev
+
+  mongodb:
+    image: mongo:latest
+    container_name: galaxia-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - galaxia-network
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: galaxia-mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=password
+    depends_on:
+      - mongodb
+    networks:
+      - galaxia-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  galaxia-network:
+    driver: bridge
