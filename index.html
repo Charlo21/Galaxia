@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Galaxia</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
     <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
     <script type="importmap">
     {
@@ -72,6 +73,50 @@
         #tigerButton { background: linear-gradient(to bottom, #FF4500, #B22222); }
         #shipButton { background: linear-gradient(to bottom, #4169E1, #000080); }
 
+        #wallet-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        #connect-wallet {
+            background: #4169E1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        #connect-wallet:hover {
+            background: #1E90FF;
+            transform: scale(1.05);
+        }
+
+        #wallet-status {
+            font-size: 14px;
+            color: #4169E1;
+        }
+
+        #coin-display {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 16px;
+            color: gold;
+        }
+
         #instructions {
             position: fixed;
             bottom: 20px;
@@ -108,6 +153,14 @@
             <button id="mastiffButton" class="character-btn">Tibetan Mastiff</button>
             <button id="tigerButton" class="character-btn">Sumatran Tiger</button>
             <button id="shipButton" class="character-btn">Galaxy Ship</button>
+        </div>
+        <div id="wallet-container">
+            <div id="coin-display">
+                <span>🪙</span>
+                <span id="coin-count">0</span>
+            </div>
+            <button id="connect-wallet" onclick="connectWallet()">Connect Wallet</button>
+            <div id="wallet-status">Not connected</div>
         </div>
         <div id="instructions">
             Click to Attack | Double Click for Special Attack | Drag to Rotate View

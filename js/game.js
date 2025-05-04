@@ -6,6 +6,49 @@ import { CharacterRenderer } from './renderer3d.js';
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Game initializing...');
 
+    // Initialize Web3
+    let web3;
+    let userAccount;
+    
+    // Make connectWallet available globally
+    window.connectWallet = async function() {
+        if (typeof window.ethereum !== 'undefined') {
+            try {
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAccount = accounts[0];
+                web3 = new Web3(window.ethereum);
+                
+                // Update UI to show connected wallet
+                const walletStatus = document.getElementById('wallet-status');
+                const connectButton = document.getElementById('connect-wallet');
+                
+                if (walletStatus && connectButton) {
+                    walletStatus.textContent = `Connected: ${userAccount.substring(0, 6)}...${userAccount.substring(38)}`;
+                    walletStatus.style.color = '#4CAF50';
+                    connectButton.style.display = 'none';
+                }
+                
+                // Listen for account changes
+                window.ethereum.on('accountsChanged', function (accounts) {
+                    userAccount = accounts[0];
+                    if (walletStatus) {
+                        walletStatus.textContent = `Connected: ${userAccount.substring(0, 6)}...${userAccount.substring(38)}`;
+                    }
+                });
+                
+                return true;
+            } catch (error) {
+                console.error('User denied account access');
+                return false;
+            }
+        } else {
+            alert('Please install MetaMask to use crypto features!');
+            window.open('https://metamask.io/download.html', '_blank');
+            return false;
+        }
+    };
+
     const canvas = document.getElementById("gameCanvas");
     if (!canvas) {
         console.error('Canvas not found!');
@@ -17,7 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.height = window.innerHeight;
 
     let currentCharacter = "tibetanMastiff";
-    const score = 0;
+    let score = 0;
+    let playerCoins = parseInt(localStorage.getItem('playerCoins')) || 0;
     let isGameOver = false;
 
     // Initialize 3D renderer
@@ -37,6 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Models loaded successfully');
             // Show initial character
             renderer.showCharacter(currentCharacter);
+            
+            // Check for daily reward only after models are loaded
+            setTimeout(() => checkDailyReward(), 1000);
         } catch (error) {
             console.error('Error loading models:', error);
         }
@@ -194,8 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Check if an enemy reaches the player
             if (enemies[i].y + enemies[i].height > canvas.height) {
-                isGameOver = true;
-                alert("Game Over!");
+                gameOver();
             }
         }
 
@@ -214,12 +260,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let lastLogin = localStorage.getItem('lastLogin');
         let currentDate = new Date().getTime();
 
-        // 24 hours in milliseconds (24 * 60 * 60 * 1000)
+        // 24 hours in milliseconds
         let timeLimit = 24 * 60 * 60 * 1000;
 
-        if (!lastLogin || (currentDate - lastLogin) > timeLimit) {
+        if (!lastLogin || (currentDate - parseInt(lastLogin)) > timeLimit) {
             giveDailyReward();
-            localStorage.setItem('lastLogin', currentDate);
+            localStorage.setItem('lastLogin', currentDate.toString());
         }
     }
 
@@ -228,26 +274,81 @@ document.addEventListener('DOMContentLoaded', () => {
         const rarityRoll = Math.random();
         let reward = {
             coins: 100,
-            rarity: 'common'
+            rarity: 'common',
+            tokens: 1
         };
         
         if (rarityRoll > 0.95) {
-            reward = { coins: 500, rarity: 'legendary' };
+            reward = { coins: 500, rarity: 'legendary', tokens: 10 };
         } else if (rarityRoll > 0.85) {
-            reward = { coins: 250, rarity: 'rare' };
+            reward = { coins: 250, rarity: 'rare', tokens: 5 };
         }
         
-        alert(`${reward.rarity.toUpperCase()} Daily Reward: ${reward.coins} coins!`);
+        const rewardMessage = `${reward.rarity.toUpperCase()} Daily Reward:\n${reward.coins} coins\n${reward.tokens} GLXIA tokens`;
+        
+        // Create custom modal for reward
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            z-index: 1000;
+            border: 2px solid #4169E1;
+        `;
+        
+        modal.innerHTML = `
+            <h2 style="color: #4169E1;">Daily Reward!</h2>
+            <p>${rewardMessage}</p>
+            <button onclick="this.parentElement.remove()" style="
+                background: #4169E1;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+            ">Claim</button>
+        `;
+        
+        document.body.appendChild(modal);
+        
         playerCoins += reward.coins;
+        localStorage.setItem('playerCoins', playerCoins.toString());
         updatePlayerCoins();
+        
+        // If wallet is connected, send tokens
+        if (userAccount && web3) {
+            sendTokens(reward.tokens);
+        }
     }
 
-    // Call this function when the game starts
-    checkDailyReward();
+    async function sendTokens(amount) {
+        if (!userAccount || !web3) return;
+        
+        // Contract address and ABI would go here
+        const contractAddress = '0x...'; // Your token contract address
+        const contract = new web3.eth.Contract(tokenABI, contractAddress);
+        
+        try {
+            await contract.methods.transfer(userAccount, web3.utils.toWei(amount.toString(), 'ether'))
+                .send({ from: userAccount });
+            console.log(`${amount} tokens sent to ${userAccount}`);
+        } catch (error) {
+            console.error('Error sending tokens:', error);
+        }
+    }
 
     // Function to update player's coin count in the UI
     function updatePlayerCoins() {
-        document.getElementById('coin-count').innerText = playerCoins;
+        const coinDisplay = document.getElementById('coin-count');
+        if (coinDisplay) {
+            coinDisplay.innerText = playerCoins;
+        }
     }
 
     // Variables for character attack power
@@ -569,5 +670,42 @@ document.addEventListener('DOMContentLoaded', () => {
             playerCoins += char.level * 50;
             alert(`${character} reached level ${char.level}!`);
         }
+    }
+
+    function gameOver() {
+        if (isGameOver) return; // Prevent multiple calls
+        
+        isGameOver = true;
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            z-index: 1000;
+            border: 2px solid #FF4444;
+        `;
+        
+        modal.innerHTML = `
+            <h2 style="color: #FF4444;">Game Over!</h2>
+            <p>Final Score: ${score}</p>
+            <button onclick="location.reload()" style="
+                background: #4169E1;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+            ">Play Again</button>
+        `;
+        
+        document.body.appendChild(modal);
     }
 });
