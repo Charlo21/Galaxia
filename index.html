@@ -193,6 +193,21 @@
             background: rgba(65, 105, 225, 1);
             transform: scale(1.05);
         }
+        
+        #music-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(65, 105, 225, 0.7);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -219,14 +234,17 @@
         <button id="change-bg-button">Change Background</button>
         
         <!-- Audio elements for sound effects -->
-        <audio id="mastiff-attack" src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_bc5d3f1c12.mp3?filename=dog-growl-6948.mp3" preload="auto"></audio>
-        <audio id="mastiff-special" src="https://cdn.pixabay.com/download/audio/2022/03/03/audio_77a3a9216f.mp3?filename=dog-bark-94780.mp3" preload="auto"></audio>
+        <audio id="mastiff-attack" src="./assets/sounds/effects/dog_attack.mp3.wav" preload="auto"></audio>
+        <audio id="mastiff-special" src="./assets/sounds/effects/being attack_hit.mp3.wav" preload="auto"></audio>
         
-        <audio id="tiger-attack" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_f1b4f4c80b.mp3?filename=lion-roar-6011.mp3" preload="auto"></audio>
-        <audio id="tiger-special" src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_99bf2e9831.mp3?filename=tiger-roar-7071.mp3" preload="auto"></audio>
+        <audio id="tiger-attack" src="./assets/sounds/effects/cat_sword attack.mp3.wav" preload="auto"></audio>
+        <audio id="tiger-special" src="./assets/sounds/effects/cat_phaser attack.mp3.wav" preload="auto"></audio>
         
-        <audio id="ship-attack" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_32f92b44c9.mp3?filename=laser-gun-81720.mp3" preload="auto"></audio>
-        <audio id="ship-special" src="https://cdn.pixabay.com/download/audio/2023/03/18/audio_e2a10bc414.mp3?filename=sci-fi-explosion-165453.mp3" preload="auto"></audio>
+        <audio id="ship-attack" src="./assets/sounds/effects/ship_phase cannon.mp3.wav" preload="auto"></audio>
+        <audio id="ship-special" src="./assets/sounds/effects/ship_photon torpedo.mp3.wav" preload="auto"></audio>
+        
+        <!-- Background music -->
+        <audio id="background-music" src="./assets/sounds/Galaxia Theme Music.mp3" loop preload="auto"></audio>
     </div>
 
     <script>
@@ -274,8 +292,73 @@
             img.src = imagePath;
         }
         
+        // Function to initialize audio
+        function initAudio() {
+            // Create background music button
+            const musicButton = document.createElement('button');
+            musicButton.id = 'music-toggle';
+            musicButton.innerHTML = '🔊 Music';
+            musicButton.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                background: rgba(65, 105, 225, 0.7);
+                color: white;
+                border: none;
+                padding: 8px 15px;
+                border-radius: 10px;
+                cursor: pointer;
+                font-size: 14px;
+                z-index: 2;
+                transition: all 0.3s ease;
+            `;
+            document.body.appendChild(musicButton);
+            
+            // Get background music element
+            const backgroundMusic = document.getElementById('background-music');
+            backgroundMusic.volume = 0.5; // Set volume to 50%
+            
+            // Toggle music on/off
+            let musicPlaying = false;
+            musicButton.addEventListener('click', () => {
+                if (musicPlaying) {
+                    backgroundMusic.pause();
+                    musicButton.innerHTML = '🔇 Music';
+                    musicPlaying = false;
+                } else {
+                    backgroundMusic.play().catch(err => {
+                        console.log('Failed to play background music:', err);
+                    });
+                    musicButton.innerHTML = '🔊 Music';
+                    musicPlaying = true;
+                }
+            });
+            
+            // Fix for audio files with .mp3.wav extension
+            const audioElements = document.querySelectorAll('audio[src*=".mp3.wav"]');
+            audioElements.forEach(audio => {
+                // Try both extensions
+                const originalSrc = audio.src;
+                audio.onerror = function() {
+                    // If .mp3.wav fails, try just .mp3
+                    audio.src = originalSrc.replace('.mp3.wav', '.mp3');
+                    // If that fails, try just .wav
+                    audio.onerror = function() {
+                        audio.src = originalSrc.replace('.mp3.wav', '.wav');
+                        // Final fallback
+                        audio.onerror = function() {
+                            console.error('Could not load audio:', originalSrc);
+                        };
+                    };
+                };
+            });
+        }
+        
         // Set initial random background
-        document.addEventListener('DOMContentLoaded', setRandomBackground);
+        document.addEventListener('DOMContentLoaded', () => {
+            setRandomBackground();
+            initAudio();
+        });
         
         // Allow user to change background on click
         document.getElementById('change-bg-button').addEventListener('click', setRandomBackground);
