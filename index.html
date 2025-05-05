@@ -234,17 +234,15 @@
         <button id="change-bg-button">Change Background</button>
         
         <!-- Audio elements for sound effects -->
-        <audio id="mastiff-attack" src="./assets/sounds/effects/dog_attack.mp3.wav" preload="auto"></audio>
-        <audio id="mastiff-special" src="./assets/sounds/effects/being attack_hit.mp3.wav" preload="auto"></audio>
+        <audio id="background-music" loop preload="auto"></audio>
+        <audio id="tibetanMastiff-attack" preload="auto"></audio>
+        <audio id="tibetanMastiff-special" preload="auto"></audio>
         
-        <audio id="tiger-attack" src="./assets/sounds/effects/cat_sword attack.mp3.wav" preload="auto"></audio>
-        <audio id="tiger-special" src="./assets/sounds/effects/cat_phaser attack.mp3.wav" preload="auto"></audio>
+        <audio id="sumatranTiger-attack" preload="auto"></audio>
+        <audio id="sumatranTiger-special" preload="auto"></audio>
         
-        <audio id="ship-attack" src="./assets/sounds/effects/ship_phase cannon.mp3.wav" preload="auto"></audio>
-        <audio id="ship-special" src="./assets/sounds/effects/ship_photon torpedo.mp3.wav" preload="auto"></audio>
-        
-        <!-- Background music -->
-        <audio id="background-music" src="./assets/sounds/Galaxia Theme Music.mp3" loop preload="auto"></audio>
+        <audio id="galaxyShip-attack" preload="auto"></audio>
+        <audio id="galaxyShip-special" preload="auto"></audio>
     </div>
 
     <script>
@@ -294,6 +292,53 @@
         
         // Function to initialize audio
         function initAudio() {
+            // Sound mapping with correct filenames
+            const soundMap = {
+                'background-music': './assets/sounds/Galaxia Theme Music.mp3',
+                
+                // Mastiff sounds
+                'tibetanMastiff-attack': './assets/sounds/effects/dog_attack.mp3.wav',
+                'tibetanMastiff-special': './assets/sounds/effects/being attack_hit.mp3.wav',
+                
+                // Tiger sounds
+                'sumatranTiger-attack': './assets/sounds/effects/cat_sword attack.mp3.wav',
+                'sumatranTiger-special': './assets/sounds/effects/cat_phaser attack.mp3.wav',
+                
+                // Ship sounds
+                'galaxyShip-attack': './assets/sounds/effects/ship_phase cannon.mp3.wav',
+                'galaxyShip-special': './assets/sounds/effects/ship_photon torpedo.mp3.wav'
+            };
+            
+            // Function to create and set up a sound
+            function setupSound(id, src) {
+                const sound = document.getElementById(id);
+                if (!sound) return null;
+                
+                // Set source
+                sound.src = src;
+                
+                // Handle loading errors
+                sound.onerror = function() {
+                    console.error(`Error loading sound: ${src}`);
+                    // Try alternative extension
+                    const alt = src.replace('.mp3.wav', '.wav');
+                    console.log(`Trying alternative: ${alt}`);
+                    sound.src = alt;
+                    
+                    // Check for further errors
+                    sound.onerror = function() {
+                        console.error(`Failed to load sound with all extensions: ${src}`);
+                    };
+                };
+                
+                return sound;
+            }
+            
+            // Set up all sounds
+            for (const [id, src] of Object.entries(soundMap)) {
+                setupSound(id, src);
+            }
+            
             // Create background music button
             const musicButton = document.createElement('button');
             musicButton.id = 'music-toggle';
@@ -334,24 +379,56 @@
                 }
             });
             
-            // Fix for audio files with .mp3.wav extension
-            const audioElements = document.querySelectorAll('audio[src*=".mp3.wav"]');
-            audioElements.forEach(audio => {
-                // Try both extensions
-                const originalSrc = audio.src;
-                audio.onerror = function() {
-                    // If .mp3.wav fails, try just .mp3
-                    audio.src = originalSrc.replace('.mp3.wav', '.mp3');
-                    // If that fails, try just .wav
-                    audio.onerror = function() {
-                        audio.src = originalSrc.replace('.mp3.wav', '.wav');
-                        // Final fallback
-                        audio.onerror = function() {
-                            console.error('Could not load audio:', originalSrc);
-                        };
-                    };
-                };
+            // Helper function to play a sound effect
+            window.playSound = function(character, type) {
+                const soundId = `${character}-${type}`;
+                const sound = document.getElementById(soundId);
+                
+                if (sound) {
+                    // Reset sound position and play
+                    sound.currentTime = 0;
+                    sound.volume = 0.7; // 70% volume for sound effects
+                    
+                    // This approach helps with browser playback policies
+                    sound.muted = false;
+                    const playPromise = sound.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise.catch(err => {
+                            console.error(`Error playing sound ${soundId}:`, err);
+                        });
+                    }
+                } else {
+                    console.error(`Sound not found: ${soundId}`);
+                }
+            };
+            
+            // Fix for audio elements to ensure they're ready to play
+            document.querySelectorAll('audio').forEach(audio => {
+                audio.load();
             });
+            
+            // Enable sound debug mode
+            window.debugSounds = function() {
+                document.querySelectorAll('audio').forEach(audio => {
+                    console.log(`Sound element ${audio.id}:`, audio);
+                    console.log(`  - src: ${audio.src}`);
+                    console.log(`  - ready state: ${audio.readyState}`);
+                    console.log(`  - network state: ${audio.networkState}`);
+                    console.log(`  - error: ${audio.error}`);
+                });
+            };
+            
+            // Test sound function
+            window.testSound = function(character, type) {
+                const soundId = `${character}-${type}`;
+                console.log(`Testing sound: ${soundId}`);
+                window.playSound(character, type);
+            };
+            
+            // Log all available sound effects for debugging
+            console.log('Available sound effects:', Object.keys(soundMap));
+            console.log('Try window.testSound("tibetanMastiff", "attack") to test sound');
         }
         
         // Set initial random background
@@ -560,9 +637,7 @@
                         console.log(`Attack! Score: ${score}`);
                         
                         // Play attack sound effect
-                        const attackSound = document.getElementById(`${currentCharacter}-attack`);
-                        attackSound.currentTime = 0;
-                        attackSound.play().catch(err => console.log('Failed to play attack sound:', err));
+                        window.playSound(currentCharacter, 'attack');
                     }
                 }
             });
@@ -596,9 +671,7 @@
                     console.log(`Special Attack! Score: ${score}`);
                     
                     // Play special attack sound effect
-                    const specialSound = document.getElementById(`${currentCharacter}-special`);
-                    specialSound.currentTime = 0;
-                    specialSound.play().catch(err => console.log('Failed to play special attack sound:', err));
+                    window.playSound(currentCharacter, 'special');
                 }
             });
             
