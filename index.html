@@ -217,6 +217,16 @@
         <div id="loading">Loading 3D Models...</div>
         <div id="background-info"></div>
         <button id="change-bg-button">Change Background</button>
+        
+        <!-- Audio elements for sound effects -->
+        <audio id="mastiff-attack" src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_bc5d3f1c12.mp3?filename=dog-growl-6948.mp3" preload="auto"></audio>
+        <audio id="mastiff-special" src="https://cdn.pixabay.com/download/audio/2022/03/03/audio_77a3a9216f.mp3?filename=dog-bark-94780.mp3" preload="auto"></audio>
+        
+        <audio id="tiger-attack" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_f1b4f4c80b.mp3?filename=lion-roar-6011.mp3" preload="auto"></audio>
+        <audio id="tiger-special" src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_99bf2e9831.mp3?filename=tiger-roar-7071.mp3" preload="auto"></audio>
+        
+        <audio id="ship-attack" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_32f92b44c9.mp3?filename=laser-gun-81720.mp3" preload="auto"></audio>
+        <audio id="ship-special" src="https://cdn.pixabay.com/download/audio/2023/03/18/audio_e2a10bc414.mp3?filename=sci-fi-explosion-165453.mp3" preload="auto"></audio>
     </div>
 
     <script>
@@ -465,6 +475,11 @@
                         
                         score += 10;
                         console.log(`Attack! Score: ${score}`);
+                        
+                        // Play attack sound effect
+                        const attackSound = document.getElementById(`${currentCharacter}-attack`);
+                        attackSound.currentTime = 0;
+                        attackSound.play().catch(err => console.log('Failed to play attack sound:', err));
                     }
                 }
             });
@@ -496,6 +511,11 @@
                     
                     score += 30;
                     console.log(`Special Attack! Score: ${score}`);
+                    
+                    // Play special attack sound effect
+                    const specialSound = document.getElementById(`${currentCharacter}-special`);
+                    specialSound.currentTime = 0;
+                    specialSound.play().catch(err => console.log('Failed to play special attack sound:', err));
                 }
             });
             
