@@ -496,6 +496,12 @@
             const models = {};
             const loader = new THREE.GLTFLoader();
             
+            // Tracking original scales for models
+            const originalScales = {};
+            // Track if an attack is in progress
+            let attackInProgress = false;
+            let specialAttackInProgress = false;
+            
             function loadModel(name, path) {
                 // Try different path formats
                 const tryPaths = [
@@ -526,6 +532,9 @@
                             models[name] = gltf.scene;
                             console.log(`Successfully loaded model: ${name}`);
                             scene.add(gltf.scene);
+                            
+                            // Store original scale
+                            originalScales[name] = gltf.scene.scale.clone();
                             
                             // Initially hide all models
                             gltf.scene.visible = false;
@@ -565,6 +574,11 @@
                 
                 // Show the selected character
                 if (models[character]) {
+                    // Reset to original scale if it exists
+                    if (originalScales[character]) {
+                        models[character].scale.copy(originalScales[character]);
+                    }
+                    
                     models[character].visible = true;
                     currentCharacter = character;
                     console.log(`Showing character: ${character}`);
@@ -619,11 +633,11 @@
             // Function to simulate attack
             canvas.addEventListener('click', (e) => {
                 // Don't trigger attack if dragging
-                if (!isDragging) {
+                if (!isDragging && !attackInProgress) {
                     if (models[currentCharacter]) {
                         // Create a pulse effect
                         const model = models[currentCharacter];
-                        const originalScale = model.scale.clone();
+                        const originalScale = originalScales[currentCharacter];
                         
                         // Scale up quickly
                         model.scale.multiplyScalar(1.2);
@@ -631,6 +645,7 @@
                         // Then return to original scale
                         setTimeout(() => {
                             model.scale.copy(originalScale);
+                            attackInProgress = false;
                         }, 150);
                         
                         score += 10;
@@ -638,40 +653,45 @@
                         
                         // Play attack sound effect
                         window.playSound(currentCharacter, 'attack');
+                        attackInProgress = true;
                     }
                 }
             });
             
             // Function to simulate special attack
             canvas.addEventListener('dblclick', () => {
-                if (models[currentCharacter]) {
-                    // Create a more dramatic effect for special attack
-                    const model = models[currentCharacter];
-                    const originalScale = model.scale.clone();
-                    const originalRotation = model.rotation.y;
-                    
-                    // Pulse and spin
-                    model.scale.multiplyScalar(1.5);
-                    
-                    // Spin animation
-                    let spins = 0;
-                    const maxSpins = 2;
-                    const spinInterval = setInterval(() => {
-                        model.rotation.y += Math.PI / 8;
-                        spins++;
+                if (!specialAttackInProgress) {
+                    if (models[currentCharacter]) {
+                        // Create a more dramatic effect for special attack
+                        const model = models[currentCharacter];
+                        const originalScale = originalScales[currentCharacter];
+                        const originalRotation = model.rotation.y;
                         
-                        if (spins >= maxSpins * 16) { // 16 steps for a full 2π rotation
-                            clearInterval(spinInterval);
-                            model.scale.copy(originalScale);
-                            model.rotation.y = originalRotation + Math.PI * 2 * maxSpins;
-                        }
-                    }, 20);
-                    
-                    score += 30;
-                    console.log(`Special Attack! Score: ${score}`);
-                    
-                    // Play special attack sound effect
-                    window.playSound(currentCharacter, 'special');
+                        // Pulse and spin
+                        model.scale.multiplyScalar(1.5);
+                        
+                        // Spin animation
+                        let spins = 0;
+                        const maxSpins = 2;
+                        const spinInterval = setInterval(() => {
+                            model.rotation.y += Math.PI / 8;
+                            spins++;
+                            
+                            if (spins >= maxSpins * 16) { // 16 steps for a full 2π rotation
+                                clearInterval(spinInterval);
+                                model.scale.copy(originalScale);
+                                model.rotation.y = originalRotation + Math.PI * 2 * maxSpins;
+                                specialAttackInProgress = false;
+                            }
+                        }, 20);
+                        
+                        score += 30;
+                        console.log(`Special Attack! Score: ${score}`);
+                        
+                        // Play special attack sound effect
+                        window.playSound(currentCharacter, 'special');
+                        specialAttackInProgress = true;
+                    }
                 }
             });
             
