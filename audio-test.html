@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        
+        .audio-controls {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            background: rgba(0, 0, 255, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid white;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+        
+        .music-info {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .button {
+            background: linear-gradient(to bottom, #4a4af7, #2a2a8a);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        
+        .volume-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .mute-button {
+            background: none;
+            border: 2px solid white;
+            border-radius: 5px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        
+        .volume-slider {
+            width: 100%;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="margin-bottom: 50px;">Audio Test Page</h1>
+    
+    <div class="audio-controls" id="audioControls">
+        <div class="music-info" id="musicInfo">Music Player</div>
+        <button class="button" id="playButton">Play Random Track</button>
+        <div class="volume-controls">
+            <button class="mute-button" id="muteButton">🔊</button>
+            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            alert('Test page loaded!');
+            
+            // Audio player setup
+            let audioPlayer = new Audio();
+            audioPlayer.volume = 0.5;
+            let isMuted = false;
+            
+            // Music tracks - using absolute paths
+            const musicTracks = [
+                'c:/Users/charl/OneDrive/Desktop/Galaxia/front-end/assets/sounds/music/Cosmic Pulse.mp3',
+                'c:/Users/charl/OneDrive/Desktop/Galaxia/front-end/assets/sounds/music/Galaxia Combat 01.mp3',
+                'c:/Users/charl/OneDrive/Desktop/Galaxia/front-end/assets/sounds/music/Nebula Core 1.mp3'
+            ];
+            
+            // Play button
+            document.getElementById('playButton').addEventListener('click', () => {
+                alert('Play button clicked!');
+                playRandomTrack();
+            });
+            
+            // Mute button
+            document.getElementById('muteButton').addEventListener('click', () => {
+                if (isMuted) {
+                    // Unmute
+                    audioPlayer.volume = document.getElementById('volumeSlider').value;
+                    document.getElementById('muteButton').textContent = '🔊';
+                    isMuted = false;
+                } else {
+                    // Mute
+                    audioPlayer.volume = 0;
+                    document.getElementById('muteButton').textContent = '🔇';
+                    isMuted = true;
+                }
+            });
+            
+            // Volume slider
+            document.getElementById('volumeSlider').addEventListener('input', (e) => {
+                audioPlayer.volume = e.target.value;
+                // Update mute button based on volume
+                if (parseFloat(e.target.value) === 0) {
+                    document.getElementById('muteButton').textContent = '🔇';
+                    isMuted = true;
+                } else {
+                    document.getElementById('muteButton').textContent = '🔊';
+                    isMuted = false;
+                }
+            });
+            
+            // Play random track
+            function playRandomTrack() {
+                const randomIndex = Math.floor(Math.random() * musicTracks.length);
+                const track = musicTracks[randomIndex];
+                
+                // Update info display
+                document.getElementById('musicInfo').textContent = 'Loading: ' + track.split('/').pop().replace('.mp3', '');
+                
+                // Stop current track
+                audioPlayer.pause();
+                
+                // Load and play new track
+                try {
+                    audioPlayer = new Audio(track);
+                    audioPlayer.volume = document.getElementById('volumeSlider').value;
+                    
+                    audioPlayer.addEventListener('canplaythrough', () => {
+                        audioPlayer.play();
+                        document.getElementById('musicInfo').textContent = 'Now Playing: ' + track.split('/').pop().replace('.mp3', '');
+                    });
+                    
+                    audioPlayer.addEventListener('error', (e) => {
+                        alert('Error playing track: ' + e.message);
+                        document.getElementById('musicInfo').textContent = 'Error loading music';
+                    });
+                } catch (error) {
+                    alert('Error creating audio player: ' + error.message);
+                    document.getElementById('musicInfo').textContent = 'Error loading music';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

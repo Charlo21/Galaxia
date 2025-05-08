@@ -83,6 +83,74 @@
             border: 1px solid rgba(65, 105, 225, 0.3);
             backdrop-filter: blur(5px);
         }
+        
+        #audio-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 15px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid rgba(74, 74, 247, 0.6);
+            box-shadow: 0 0 20px rgba(74, 74, 247, 0.3);
+            backdrop-filter: blur(5px);
+            pointer-events: all;
+        }
+        
+        #music-info {
+            font-size: 14px;
+            color: #4169E1;
+            text-align: center;
+            margin: 5px 0;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        #change-music {
+            background: linear-gradient(to bottom, #4a4af7, #2a2a8a);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        #change-music:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(74, 74, 247, 0.5);
+        }
+        
+        .volume-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        #volume-slider {
+            width: 100px;
+            cursor: pointer;
+        }
+        
+        #mute-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+        }
 
         #connect-wallet {
             background: #4169E1;
@@ -167,6 +235,8 @@
             <button id="connect-wallet">Connect Wallet</button>
             <div id="wallet-status">Not connected</div>
         </div>
+        
+        <!-- Audio controls will be created dynamically by JavaScript -->
         <div id="instructions">
             Click to Attack | Double Click for Special Attack | Drag to Rotate View
         </div>
@@ -189,6 +259,176 @@
             document.getElementById('coin-count').textContent = playerCoins;
             
             // Web3 connection
+                        // Add background changing functionality
+            const changeBackgroundBtn = document.createElement('button');
+            changeBackgroundBtn.id = 'change-background';
+            changeBackgroundBtn.textContent = 'Change Background';
+            changeBackgroundBtn.style.cssText = `
+                background: linear-gradient(to bottom, #8e44ad, #6c3483);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: bold;
+                margin-bottom: 10px;
+                transition: all 0.3s ease;
+            `;
+            changeBackgroundBtn.addEventListener('mouseover', () => {
+                changeBackgroundBtn.style.transform = 'scale(1.05)';
+                changeBackgroundBtn.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+            });
+            changeBackgroundBtn.addEventListener('mouseout', () => {
+                changeBackgroundBtn.style.transform = 'scale(1)';
+                changeBackgroundBtn.style.boxShadow = 'none';
+            });
+            changeBackgroundBtn.addEventListener('click', () => {
+                loadRandomBackground();
+            });
+            document.getElementById('wallet-container').prepend(changeBackgroundBtn);
+            
+            // Create audio controls dynamically
+            function createAudioControls() {
+                console.log('Creating audio controls');
+                const audioControls = document.createElement('div');
+                audioControls.id = 'audio-controls';
+                audioControls.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    z-index: 9999;
+                    background: rgba(0, 0, 0, 0.9);
+                    padding: 15px;
+                    border-radius: 15px;
+                    color: white;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 10px;
+                    border: 2px solid rgba(74, 74, 247, 0.6);
+                    box-shadow: 0 0 20px rgba(74, 74, 247, 0.3);
+                    backdrop-filter: blur(5px);
+                    pointer-events: all;
+                    width: 220px;
+                `;
+                
+                // Music info display
+                const musicInfo = document.createElement('div');
+                musicInfo.id = 'music-info';
+                musicInfo.textContent = 'Loading music...';
+                musicInfo.style.cssText = `
+                    font-size: 14px;
+                    color: #4169E1;
+                    text-align: center;
+                    margin: 5px 0;
+                    max-width: 200px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                `;
+                audioControls.appendChild(musicInfo);
+                
+                // Change music button
+                const changeMusic = document.createElement('button');
+                changeMusic.id = 'change-music';
+                changeMusic.textContent = 'Change Music';
+                changeMusic.style.cssText = `
+                    background: linear-gradient(to bottom, #4a4af7, #2a2a8a);
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    transition: all 0.3s ease;
+                    width: 100%;
+                `;
+                changeMusic.addEventListener('mouseover', () => {
+                    changeMusic.style.transform = 'scale(1.05)';
+                    changeMusic.style.boxShadow = '0 0 15px rgba(74, 74, 247, 0.5)';
+                });
+                changeMusic.addEventListener('mouseout', () => {
+                    changeMusic.style.transform = 'scale(1)';
+                    changeMusic.style.boxShadow = 'none';
+                });
+                changeMusic.addEventListener('click', () => {
+                    playRandomTrack();
+                });
+                audioControls.appendChild(changeMusic);
+                
+                // Volume controls container
+                const volumeControls = document.createElement('div');
+                volumeControls.className = 'volume-controls';
+                volumeControls.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-top: 5px;
+                    width: 100%;
+                `;
+                
+                // Mute button
+                const muteButton = document.createElement('button');
+                muteButton.id = 'mute-button';
+                muteButton.textContent = '🔊';
+                muteButton.style.cssText = `
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 20px;
+                    cursor: pointer;
+                    padding: 0;
+                    margin: 0;
+                `;
+                muteButton.addEventListener('click', () => {
+                    if (isMuted) {
+                        // Unmute
+                        audioPlayer.volume = document.getElementById('volume-slider').value;
+                        muteButton.textContent = '🔊';
+                        isMuted = false;
+                    } else {
+                        // Mute
+                        audioPlayer.volume = 0;
+                        muteButton.textContent = '🔇';
+                        isMuted = true;
+                    }
+                });
+                volumeControls.appendChild(muteButton);
+                
+                // Volume slider
+                const volumeSlider = document.createElement('input');
+                volumeSlider.id = 'volume-slider';
+                volumeSlider.type = 'range';
+                volumeSlider.min = '0';
+                volumeSlider.max = '1';
+                volumeSlider.step = '0.1';
+                volumeSlider.value = '0.5';
+                volumeSlider.style.cssText = `
+                    width: 100px;
+                    cursor: pointer;
+                `;
+                volumeSlider.addEventListener('input', (e) => {
+                    audioPlayer.volume = e.target.value;
+                    // Update mute button based on volume
+                    if (parseFloat(e.target.value) === 0) {
+                        muteButton.textContent = '🔇';
+                        isMuted = true;
+                    } else {
+                        muteButton.textContent = '🔊';
+                        isMuted = false;
+                    }
+                });
+                volumeControls.appendChild(volumeSlider);
+                
+                audioControls.appendChild(volumeControls);
+                
+                // Add to document
+                document.body.appendChild(audioControls);
+                console.log('Audio controls created and added to document');
+                
+                return audioControls;
+            }
+            
             document.getElementById('connect-wallet').addEventListener('click', () => {
                 if (typeof window.ethereum !== 'undefined') {
                     window.ethereum.request({ method: 'eth_requestAccounts' })
@@ -225,6 +465,127 @@
             const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
             directionalLight.position.set(0, 1, 1);
             scene.add(directionalLight);
+            
+            // Set up background system with TV fantasy art
+            const backgroundTexture = new THREE.TextureLoader();
+            let currentBackground = null;
+            const backgroundSphere = new THREE.Mesh(
+                new THREE.SphereGeometry(500, 60, 40),
+                new THREE.MeshBasicMaterial({ color: 0x000000 })
+            );
+            // Flip the geometry inside out
+            backgroundSphere.scale.x = -1;
+            scene.add(backgroundSphere);
+            
+            // Set up background music system
+            let audioPlayer = new Audio();
+            audioPlayer.volume = 0.5;
+            audioPlayer.loop = false;
+            let currentTrack = '';
+            let isMuted = false;
+            
+            // List of music tracks
+            const musicTracks = [
+                'front-end/assets/sounds/music/Cosmic Pulse.mp3',
+                'front-end/assets/sounds/music/Galaxia Combat 01.mp3',
+                'front-end/assets/sounds/music/High-Energy Techno & Industrial 2.1.mp3',
+                'front-end/assets/sounds/music/High-Energy Techno & Industrial 2.2.mp3',
+                'front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 1.mp3',
+                'front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.1.mp3',
+                'front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.2.mp3',
+                'front-end/assets/sounds/music/Industrial Orbit.mp3',
+                'front-end/assets/sounds/music/Nebula Core 1.mp3',
+                'front-end/assets/sounds/music/Nebula Core 2.mp3',
+                'front-end/assets/sounds/music/Quantum Circuitry 1.mp3',
+                'front-end/assets/sounds/music/Quantum Circuitry 2.mp3',
+                'front-end/assets/sounds/music/Stellar Drift 1.mp3',
+                'front-end/assets/sounds/music/Stellar Drift 2.mp3'
+            ];
+            
+            // List of background images
+            const backgroundImages = [
+                'front-end/assets/Images/backgrounds/Akira Toriyama Inspired Manga.jpg',
+                'front-end/assets/Images/backgrounds/Alan Lee Inpspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Alan Lee Inspired Alien World.jpg',
+                'front-end/assets/Images/backgrounds/Alicia Austin  Inspired Nebula.jpg',
+                'front-end/assets/Images/backgrounds/Amano Inspired Alien World.jpg',
+                'front-end/assets/Images/backgrounds/Boris Vallejo Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Christopher Norton Moore  Inspired Nebula.jpg',
+                'front-end/assets/Images/backgrounds/David Burroughs Mattingly  Inspired Nebula.jpg',
+                'front-end/assets/Images/backgrounds/Donato Giancola  Inspired Nebula.jpg',
+                'front-end/assets/Images/backgrounds/Donato Giancola Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Frank Frazetta Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Frank Kelly Freas Inspired Alien World.jpg',
+                'front-end/assets/Images/backgrounds/Gerald Brom Inspired Alien World.jpg',
+                'front-end/assets/Images/backgrounds/Gervasio Gallardo Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Gustavo Cabral Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Hiromu Arakawa Inspired Manga.jpg',
+                'front-end/assets/Images/backgrounds/Jean-Baptiste Monge Inspired Nebula.jpg',
+                'front-end/assets/Images/backgrounds/Jeff Easley Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Jim Burns Inspired Alien World.jpg',
+                'front-end/assets/Images/backgrounds/Jim Warren Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Keith A. Parkinson Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Larry Elmore Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Leiji Matsumoto Inspired Manga.jpg',
+                'front-end/assets/Images/backgrounds/Michael Whelan Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Naoki Urasawa Inspired Manga.jpg',
+                'front-end/assets/Images/backgrounds/Naoko Takeuchi Inspired Manga.jpg',
+                'front-end/assets/Images/backgrounds/Ted Nasmith Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Tim White Inspired Fantasy Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/Wayne Douglas Barlowe Inspired Piece 2.jpg',
+                'front-end/assets/Images/backgrounds/William Stout Inspired Piece 2.jpg'
+            ];
+            
+            // Function to load a random background
+            function loadRandomBackground() {
+                const randomIndex = Math.floor(Math.random() * backgroundImages.length);
+                loadBackground(backgroundImages[randomIndex]);
+            }
+            
+            // Function to load a specific background
+            function loadBackground(imagePath) {
+                console.log(`Loading background: ${imagePath}`);
+                backgroundTexture.load(
+                    imagePath,
+                    (texture) => {
+                        backgroundSphere.material.dispose();
+                        backgroundSphere.material = new THREE.MeshBasicMaterial({
+                            map: texture,
+                            side: THREE.BackSide  // Ensure the texture is visible from inside
+                        });
+                        currentBackground = imagePath;
+                        console.log(`Background loaded: ${imagePath}`);
+                    },
+                    (progress) => {
+                        console.log(`Loading background: ${(progress.loaded / progress.total * 100).toFixed(0)}%`);
+                    },
+                    (error) => {
+                        console.error(`Error loading background: ${imagePath}`, error);
+                        // Try with a different path format
+                        const alternatePath = imagePath.replace('front-end/', '');
+                        console.log(`Trying alternate path: ${alternatePath}`);
+                        backgroundTexture.load(
+                            alternatePath,
+                            (texture) => {
+                                backgroundSphere.material.dispose();
+                                backgroundSphere.material = new THREE.MeshBasicMaterial({
+                                    map: texture,
+                                    side: THREE.BackSide
+                                });
+                                currentBackground = alternatePath;
+                                console.log(`Background loaded: ${alternatePath}`);
+                            },
+                            null,
+                            (secondError) => {
+                                console.error(`Error loading background with alternate path: ${alternatePath}`, secondError);
+                            }
+                        );
+                    }
+                );
+            }
+            
+            // Load initial random background
+            loadRandomBackground();
             
             // Character models
             const models = {};
@@ -347,6 +708,99 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
             
+            // Create audio controls
+            const audioControlsElement = createAudioControls();
+            
+            // Function to play a random music track
+            function playRandomTrack() {
+                const randomIndex = Math.floor(Math.random() * musicTracks.length);
+                playTrack(musicTracks[randomIndex]);
+            }
+            
+            // Function to play a specific track
+            function playTrack(trackPath) {
+                console.log(`Loading music track: ${trackPath}`);
+                const musicInfo = document.getElementById('music-info');
+                musicInfo.textContent = 'Loading track...'; 
+                
+                // Save current volume
+                const currentVolume = audioPlayer.volume;
+                
+                // Stop current track
+                audioPlayer.pause();
+                
+                // Try to load with the provided path
+                try {
+                    audioPlayer = new Audio(trackPath);
+                    audioPlayer.volume = currentVolume;
+                    audioPlayer.addEventListener('canplaythrough', () => {
+                        audioPlayer.play();
+                        currentTrack = trackPath;
+                        // Display track name (remove path and extension)
+                        const trackName = trackPath.split('/').pop().replace('.mp3', '');
+                        musicInfo.textContent = trackName;
+                        console.log(`Now playing: ${trackName}`);
+                    });
+                    
+                    // Handle errors
+                    audioPlayer.addEventListener('error', () => {
+                        console.error(`Error loading track: ${trackPath}`);
+                        // Try with alternate path
+                        const alternatePath = trackPath.replace('front-end/', '');
+                        console.log(`Trying alternate path: ${alternatePath}`);
+                        tryAlternatePath(alternatePath, currentVolume);
+                    });
+                    
+                    // When track ends, play next random track
+                    audioPlayer.addEventListener('ended', () => {
+                        console.log('Track ended, playing next random track');
+                        playRandomTrack();
+                    });
+                } catch (error) {
+                    console.error('Error creating audio player:', error);
+                    musicInfo.textContent = 'Error playing music';
+                }
+            }
+            
+            // Function to try loading with an alternate path
+            function tryAlternatePath(alternatePath, volume) {
+                try {
+                    audioPlayer = new Audio(alternatePath);
+                    audioPlayer.volume = volume;
+                    audioPlayer.addEventListener('canplaythrough', () => {
+                        audioPlayer.play();
+                        currentTrack = alternatePath;
+                        // Display track name (remove path and extension)
+                        const trackName = alternatePath.split('/').pop().replace('.mp3', '');
+                        document.getElementById('music-info').textContent = trackName;
+                        console.log(`Now playing: ${trackName}`);
+                    });
+                    
+                    // When track ends, play next random track
+                    audioPlayer.addEventListener('ended', () => {
+                        playRandomTrack();
+                    });
+                    
+                    // If alternate path also fails, show error
+                    audioPlayer.addEventListener('error', () => {
+                        console.error(`Error loading track with alternate path: ${alternatePath}`);
+                        document.getElementById('music-info').textContent = 'Error playing music';
+                        // Try another random track
+                        setTimeout(playRandomTrack, 2000);
+                    });
+                } catch (error) {
+                    console.error('Error creating audio player with alternate path:', error);
+                    document.getElementById('music-info').textContent = 'Error playing music';
+                    // Try another random track
+                    setTimeout(playRandomTrack, 2000);
+                }
+            }
+            
+            // Volume and mute controls are now set up in the createAudioControls function
+            
+            // Start playing random music track
+            playRandomTrack();
+            
             // Animation loop
             function animate() {
                 requestAnimationFrame(animate);
@@ -356,6 +810,11 @@
                     if (models[name] && models[name].visible) {
                         models[name].rotation.y += 0.01;
                     }
+                }
+                
+                // Slow rotation of the background sphere for effect
+                if (backgroundSphere) {
+                    backgroundSphere.rotation.y += 0.0001;
                 }
                 
                 renderer.render(scene, camera);
@@ -414,6 +873,114 @@
                 }
             }, 2000);
         });
+    </script>
+    <!-- Direct music player script added inline to ensure it loads -->
+    <script>
+        // Immediately-invoked function to handle music playback
+        (function() {
+            console.log('Inline music player initializing at timestamp:', new Date().getTime());
+            
+            // List of music tracks with absolute paths to ensure they're found
+            const musicTracks = [
+                'front-end/assets/sounds/music/Cosmic Pulse.mp3',
+                'front-end/assets/sounds/music/Galaxia Combat 01.mp3',
+                'front-end/assets/sounds/music/High-Energy Techno & Industrial 2.1.mp3',
+                'front-end/assets/sounds/music/High-Energy Techno & Industrial 2.2.mp3',
+                'front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 1.mp3',
+                'front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.1.mp3',
+                'front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.2.mp3',
+                'front-end/assets/sounds/music/Industrial Orbit.mp3',
+                'front-end/assets/sounds/music/Nebula Core 1.mp3',
+                'front-end/assets/sounds/music/Nebula Core 2.mp3',
+                'front-end/assets/sounds/music/Quantum Circuitry 1.mp3',
+                'front-end/assets/sounds/music/Quantum Circuitry 2.mp3',
+                'front-end/assets/sounds/music/Stellar Drift 1.mp3',
+                'front-end/assets/sounds/music/Stellar Drift 2.mp3',
+                'assets/sounds/music/Cosmic Pulse.mp3',
+                'assets/sounds/music/Galaxia Combat 01.mp3',
+                'assets/sounds/music/High-Energy Techno & Industrial 2.1.mp3',
+                'assets/sounds/music/High-Energy Techno & Industrial 2.2.mp3',
+                'assets/sounds/music/High-Energy Techno & Industrial-Inspired 1.mp3',
+                'assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.1.mp3',
+                'assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.2.mp3',
+                'assets/sounds/music/Industrial Orbit.mp3',
+                'assets/sounds/music/Nebula Core 1.mp3',
+                'assets/sounds/music/Nebula Core 2.mp3',
+                'assets/sounds/music/Quantum Circuitry 1.mp3',
+                'assets/sounds/music/Quantum Circuitry 2.mp3',
+                'assets/sounds/music/Stellar Drift 1.mp3',
+                'assets/sounds/music/Stellar Drift 2.mp3'
+            ];
+            
+            // Get the last played track index from localStorage
+            const lastPlayedIndex = parseInt(localStorage.getItem('galaxiaLastTrack') || '-1');
+            console.log('Last played track index was:', lastPlayedIndex);
+            
+            // Create audio element
+            let audioPlayer = new Audio();
+            audioPlayer.volume = 0.5;
+            audioPlayer.id = 'background-music';
+            document.body.appendChild(audioPlayer); // Add to DOM to ensure it's loaded
+            
+            // Function to play a random track
+            function playRandomTrack() {
+                // Get a random index, different from last played
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * musicTracks.length);
+                } while (randomIndex === lastPlayedIndex && musicTracks.length > 1);
+                
+                // Save this index for next page load
+                localStorage.setItem('galaxiaLastTrack', randomIndex.toString());
+                
+                const trackPath = musicTracks[randomIndex];
+                console.log('Attempting to play track:', trackPath);
+                
+                // Try to play the track
+                try {
+                    audioPlayer.src = trackPath;
+                    
+                    audioPlayer.oncanplaythrough = function() {
+                        audioPlayer.play()
+                            .then(() => {
+                                console.log('Successfully playing:', trackPath);
+                            })
+                            .catch(error => {
+                                console.error('Error during play():', error);
+                            });
+                    };
+                    
+                    audioPlayer.onerror = function(e) {
+                        console.error('Error loading audio:', e);
+                        // If we're at an even index, try the alternative path (we have pairs of paths)
+                        if (randomIndex % 2 === 0 && randomIndex + 1 < musicTracks.length) {
+                            console.log('Trying alternative path');
+                            audioPlayer.src = musicTracks[randomIndex + 1];
+                        } else {
+                            // Try another random track
+                            setTimeout(playRandomTrack, 1000);
+                        }
+                    };
+                    
+                    // When track ends, play another random one
+                    audioPlayer.onended = playRandomTrack;
+                    
+                } catch (error) {
+                    console.error('Error setting up audio player:', error);
+                }
+            }
+            
+            // Start playback when page loads
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                // Document already loaded
+                setTimeout(playRandomTrack, 1000);
+            } else {
+                // Wait for document to load
+                document.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(playRandomTrack, 1000);
+                });
+            }
+        })();
     </script>
 </body>
 </html>

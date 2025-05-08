@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #222;
+            color: white;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #4169E1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #status {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Galaxia Music Test Page</h1>
+    <p>This page tests if we can access and play the music files.</p>
+    
+    <div>
+        <button onclick="playSpecificFile('music/Cosmic Pulse.mp3')">Play Cosmic Pulse</button>
+        <button onclick="playSpecificFile('music/Nebula Core 1.mp3')">Play Nebula Core</button>
+        <button onclick="playSpecificFile('music/Quantum Circuitry 1.mp3')">Play Quantum Circuitry</button>
+    </div>
+    
+    <div id="status">Status: Ready to test</div>
+    
+    <script>
+        // Simple audio player
+        let audioPlayer = null;
+        
+        function playSpecificFile(filePath) {
+            const status = document.getElementById('status');
+            status.textContent = `Attempting to play: ${filePath}`;
+            
+            // Stop any current playback
+            if (audioPlayer) {
+                audioPlayer.pause();
+            }
+            
+            // Create new audio element
+            audioPlayer = new Audio(filePath);
+            audioPlayer.volume = 0.5;
+            
+            // Set up event handlers
+            audioPlayer.oncanplaythrough = function() {
+                status.textContent = `Now playing: ${filePath}`;
+                audioPlayer.play();
+            };
+            
+            audioPlayer.onerror = function(e) {
+                status.textContent = `ERROR playing: ${filePath} - Error code: ${audioPlayer.error.code}`;
+                console.error('Audio error:', audioPlayer.error);
+                
+                // Try with front-end path
+                const altPath = `front-end/assets/sounds/${filePath.replace('music/', '')}`;
+                status.textContent += `\nTrying alternate path: ${altPath}`;
+                
+                setTimeout(() => {
+                    const altPlayer = new Audio(altPath);
+                    altPlayer.volume = 0.5;
+                    
+                    altPlayer.oncanplaythrough = function() {
+                        status.textContent = `Now playing (alt path): ${altPath}`;
+                        altPlayer.play();
+                        audioPlayer = altPlayer;
+                    };
+                    
+                    altPlayer.onerror = function() {
+                        status.textContent += `\nERROR with alt path too!`;
+                        console.error('Alt path error:', altPlayer.error);
+                    };
+                }, 1000);
+            };
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxia - Web3 Game</title>
+    <!-- Fix script to remove any stuck modals -->
+    <script src="./js/fix.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.132.2/build/three.module.js",
+            "three/examples/jsm/": "https://unpkg.com/three@0.132.2/examples/jsm/"
+        }
+    }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: url('./assets/Images/backgrounds/Jean-Baptiste Monge Inspired Nebula.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #controls {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .character-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: linear-gradient(to bottom, #4a4a4a, #2a2a2a);
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .character-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+
+        #mastiffButton { background: linear-gradient(to bottom, #8B4513, #654321); }
+        #tigerButton { background: linear-gradient(to bottom, #FF4500, #B22222); }
+        #shipButton { background: linear-gradient(to bottom, #4169E1, #000080); }
+
+        #wallet-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 15px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        #connect-wallet {
+            background: #4169E1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #connect-wallet:hover {
+            background: #1E90FF;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        #wallet-status {
+            font-size: 14px;
+            color: #4169E1;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        #coin-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            color: gold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.4);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        #instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            z-index: 3;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            z-index: 1000;
+            border: 2px solid #4169E1;
+            box-shadow: 0 0 20px rgba(65, 105, 225, 0.3);
+            backdrop-filter: blur(10px);
+            min-width: 300px;
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            color: #4169E1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal button {
+            background: #4169E1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal button:hover {
+            background: #1E90FF;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="controls">
+            <button id="mastiffButton" class="character-btn">Tibetan Mastiff</button>
+            <button id="tigerButton" class="character-btn">Sumatran Tiger</button>
+            <button id="shipButton" class="character-btn">Galaxy Ship</button>
+        </div>
+        <div id="wallet-container">
+            <div id="coin-display">
+                <span>🪙</span>
+                <span id="coin-count">0</span>
+            </div>
+            <button id="connect-wallet" onclick="connectWallet()">Connect Wallet</button>
+            <div id="wallet-status">Not connected</div>
+        </div>
+        <div id="instructions">
+            Click to Attack | Double Click for Special Attack | Drag to Rotate View
+        </div>
+        <div id="loading">Loading 3D Models...</div>
+    </div>
+    <script type="module" src="./js/game.js"></script>
+</body>
+</html>
