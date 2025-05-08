@@ -748,49 +748,58 @@
                     });
             }
             
-            // Animation parameters
+            // Simple animation parameters
             let isAttacking = false;
-            let attackAnimationId = null;
+            let attackTimeoutId = null;
             
-            // Function to create a smooth attack animation
-            function animateAttack(model, rotationAmount, duration = 800) {
-                if (isAttacking) {
-                    return; // Don't start a new attack while one is in progress
-                }
-                
-                isAttacking = true;
-                const startTime = performance.now();
-                const startRotation = model.rotation.y;
-                const targetRotation = startRotation + rotationAmount;
-                
-                // Cancel any existing animation
-                if (attackAnimationId) {
-                    cancelAnimationFrame(attackAnimationId);
-                }
-                
-                // Create smooth animation function
-                function attackAnimationStep() {
-                    const currentTime = performance.now();
-                    const elapsedTime = currentTime - startTime;
-                    const progress = Math.min(elapsedTime / duration, 1);
+            // Function to perform a regular attack
+            function regularAttack() {
+                if (models[currentCharacter] && !isAttacking) {
+                    // Prevent attacks while one is in progress
+                    isAttacking = true;
                     
-                    // Smooth sine-based easing for natural movement
-                    const easedProgress = 0.5 - Math.cos(progress * Math.PI) / 2;
+                    // Rotate the model slightly to show attack
+                    models[currentCharacter].rotation.y += 0.5;
                     
-                    // Update rotation
-                    model.rotation.y = startRotation + (rotationAmount * easedProgress);
+                    // Update score
+                    score += 10;
+                    updateScore();
+                    debug(`Attack! Score: ${score}`);
                     
-                    // Continue animation or end
-                    if (progress < 1) {
-                        attackAnimationId = requestAnimationFrame(attackAnimationStep);
-                    } else {
+                    // Play attack sound
+                    playAttackSound(false);
+                    
+                    // End attack state after a short delay
+                    clearTimeout(attackTimeoutId);
+                    attackTimeoutId = setTimeout(() => {
                         isAttacking = false;
-                        attackAnimationId = null;
-                    }
+                    }, 300);
                 }
-                
-                // Start animation
-                attackAnimationId = requestAnimationFrame(attackAnimationStep);
+            }
+            
+            // Function to perform a special attack
+            function specialAttack() {
+                if (models[currentCharacter] && !isAttacking) {
+                    // Prevent attacks while one is in progress
+                    isAttacking = true;
+                    
+                    // Rotate the model more to show special attack
+                    models[currentCharacter].rotation.y += 1.5;
+                    
+                    // Update score
+                    score += 30;
+                    updateScore();
+                    debug(`Special Attack! Score: ${score}`);
+                    
+                    // Play special attack sound
+                    playAttackSound(true);
+                    
+                    // End attack state after a short delay
+                    clearTimeout(attackTimeoutId);
+                    attackTimeoutId = setTimeout(() => {
+                        isAttacking = false;
+                    }, 500);
+                }
             }
             
             // Separate attack functions for clarity
@@ -824,39 +833,21 @@
                 }
             }
             
-            // Use a better double-click implementation
-            // Note: Using shared lastClickTime variable from above
-            const doubleClickDelay = 250; // ms
-
-            // Single consolidated click handler for better detection
+            // Simple click handler for regular attack
             canvas.addEventListener('click', function(event) {
-                const currentTime = Date.now();
-                const timeSinceLastClick = currentTime - lastClickTime;
-
-                // If this is a second click within the double-click threshold
-                if (timeSinceLastClick < doubleClickDelay) {
-                    // This is a double-click
-                    event.preventDefault();
-                    specialAttack();
-                    debug('Double click special attack!');
-                    
-                    // Reset the timer to prevent triple-click issues
-                    lastClickTime = 0;
-                } else {
-                    // This might be the first click of a double-click or a single click
-                    // Wait briefly to see if a double-click follows
-                    setTimeout(() => {
-                        // If no second click came, then it was a single click
-                        const newTimeSinceLastClick = Date.now() - lastClickTime;
-                        if (newTimeSinceLastClick >= doubleClickDelay && !isAttacking && !isDragging) {
-                            regularAttack();
-                            debug('Single click attack');
-                        }
-                    }, doubleClickDelay);
-                    
-                    // Update the timestamp for the first click
-                    lastClickTime = currentTime;
-                }
+                // Ignore the click if we're dragging
+                if (isDragging) return;
+                
+                regularAttack();
+            });
+            
+            // Simple double-click handler for special attack
+            canvas.addEventListener('dblclick', function(event) {
+                // Prevent default behavior (text selection, etc)
+                event.preventDefault();
+                event.stopPropagation();
+                
+                specialAttack();
             });
             
             // Add keyboard shortcuts for attacks
@@ -885,83 +876,42 @@
                 debug('Special attack triggered by button');
             });
             
-            // Mouse interaction variables
+            // Simple drag rotation variables
             let isDragging = false;
             let previousMousePosition = { x: 0, y: 0 };
-            // We'll use a shared lastClickTime for all click detection
-            let hasMoved = false;
-            const doubleClickThreshold = 300; // ms between clicks to count as double-click
-
-            // Mouse down - start potential drag or click
-            document.addEventListener('mousedown', (event) => {
+            
+            // Mouse down to start dragging
+            canvas.addEventListener('mousedown', function(event) {
                 // Only track left mouse button
                 if (event.button === 0) {
                     isDragging = true;
-                    hasMoved = false;
                     previousMousePosition = { x: event.clientX, y: event.clientY };
-                    
-                    // Prevent default behavior to avoid text selection
-                    event.preventDefault();
                 }
             });
             
-            // Mouse move - handle rotation if dragging
-            document.addEventListener('mousemove', (event) => {
-                if (isDragging) {
+            // Mouse move to rotate the model
+            canvas.addEventListener('mousemove', function(event) {
+                // Rotate the model if dragging and not attacking
+                if (isDragging && !isAttacking && models[currentCharacter]) {
                     const deltaX = event.clientX - previousMousePosition.x;
                     const deltaY = event.clientY - previousMousePosition.y;
                     
-                    // If moved significantly, mark as moved
-                    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
-                        hasMoved = true;
-                    }
+                    // Apply rotation
+                    models[currentCharacter].rotation.y += deltaX * 0.01;
+                    models[currentCharacter].rotation.x += deltaY * 0.01;
                     
-                    // Apply rotation to current character
-                    if (models[currentCharacter] && !isAttacking) {
-                        // Rotate more on the Y axis (left-right) for better visualization
-                        models[currentCharacter].rotation.y += deltaX * 0.01;
-                        
-                        // Limit X rotation (up-down) to prevent flipping
-                        const newXRotation = models[currentCharacter].rotation.x + (deltaY * 0.005);
-                        models[currentCharacter].rotation.x = Math.max(-0.5, Math.min(0.5, newXRotation));
-                    }
-                    
-                    // Update position for next frame
+                    // Update position for next calculation
                     previousMousePosition = { x: event.clientX, y: event.clientY };
                 }
             });
             
-            // Mouse up - end drag and detect clicks and double-clicks
-            document.addEventListener('mouseup', (event) => {
-                // Only process left mouse button
-                if (event.button === 0) {
-                    // Calculate time since last click
-                    const currentTime = Date.now();
-                    const timeSinceLastClick = currentTime - lastClickTime;
-                    
-                    // If this wasn't a drag (minimal movement)
-                    if (!hasMoved && !isAttacking) {
-                        // Check if it's a double click (second click within threshold)
-                        if (timeSinceLastClick < doubleClickThreshold) {
-                            // This is a double-click - special attack!
-                            specialAttack();
-                            // Reset click tracking
-                            lastClickTime = 0;
-                        } else {
-                            // This is a single click - regular attack
-                            regularAttack();
-                            // Update last click time for double-click detection
-                            lastClickTime = currentTime;
-                        }
-                    }
-                    
-                    // End drag state regardless
-                    isDragging = false;
-                }
+            // Mouse up to end dragging
+            canvas.addEventListener('mouseup', function() {
+                isDragging = false;
             });
             
-            // Mouse leave - cancel drag if mouse leaves window
-            document.addEventListener('mouseleave', () => {
+            // Mouse leave to handle if cursor leaves the canvas
+            canvas.addEventListener('mouseleave', function() {
                 isDragging = false;
             });
             
@@ -973,26 +923,19 @@
                     specialAttack(); // Enter for special attack
                 }
             });
-            
             // Animation loop
             function animate() {
                 requestAnimationFrame(animate);
                 
-                // Add gentle idle side-to-side rotation (only when not attacking and not dragging)
-                if (!isAttacking && !isDragging) {
+                // Add gentle rotation animation to active model when not dragging
+                if (!isDragging) {
                     for (const name in models) {
                         if (models[name] && models[name].visible) {
-                            // Gentle Y-axis (left-to-right) rotation
-                            models[name].rotation.y += 0.005;
-                            
-                            // Add subtle floating effect with sine wave
-                            const time = performance.now() * 0.001;
-                            models[name].position.y = Math.sin(time) * 0.05;
+                            // Gentle Y-axis (side-to-side) rotation
+                            models[name].rotation.y += 0.01;
                         }
                     }
                 }
-                
-                // No orbit controls to update
                 
                 // Render the scene
                 renderer.render(scene, camera);
