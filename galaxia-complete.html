@@ -188,7 +188,7 @@
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
         
-        <!-- Top left background button -->
+        <!-- Background button at top left -->
         <div style="position: absolute; top: 20px; left: 20px; z-index: 1000;">
             <button id="change-background" class="control-button">Change Background</button>
         </div>
@@ -271,7 +271,7 @@
             const backgroundTexture = new THREE.TextureLoader();
             let currentBackground = null;
             const backgroundSphere = new THREE.Mesh(
-                new THREE.SphereGeometry(50000, 60, 40), // Much larger sphere to eliminate zoomed backgrounds
+                new THREE.SphereGeometry(1000, 60, 40), // More reasonable size for background display
                 new THREE.MeshBasicMaterial({ color: 0x000000 })
             );
             // Flip the geometry inside out
@@ -371,23 +371,23 @@
                 debug(`Playing ${isSpecial ? 'special' : 'regular'} attack sound for ${currentCharacter}`);
                 let soundPath = '';
                 
-                // Get the appropriate sound path based on character and attack type with encoded URLs for spaces
+                // Get the appropriate sound path based on character and attack type with proper URL encoding
                 switch (currentCharacter) {
                     case 'tibetanMastiff':
-                        soundPath = 'https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/dog_attack.mp3.wav';
+                        soundPath = 'front-end/assets/sounds/effects/dog_attack.mp3.wav';
                         break;
                     case 'sumatranTiger':
                         if (isSpecial) {
-                            soundPath = 'https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/cat_phaser%20attack.mp3.wav';
+                            soundPath = 'front-end/assets/sounds/effects/cat_phaser attack.mp3.wav';
                         } else {
-                            soundPath = 'https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/cat_sword%20attack.mp3.wav';
+                            soundPath = 'front-end/assets/sounds/effects/cat_sword attack.mp3.wav';
                         }
                         break;
                     case 'galaxyShip':
                         if (isSpecial) {
-                            soundPath = 'https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/ship_photon%20torpedo.mp3.wav';
+                            soundPath = 'front-end/assets/sounds/effects/ship_photon torpedo.mp3.wav';
                         } else {
-                            soundPath = 'https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/ship_phase%20cannon.mp3.wav';
+                            soundPath = 'front-end/assets/sounds/effects/ship_phase cannon.mp3.wav';
                         }
                         break;
                 }
