@@ -784,61 +784,65 @@
                 attackAnimationId = requestAnimationFrame(attackAnimationStep);
             }
             
-            // Track clicks for double-click detection
-            let lastClickTime = 0;
-            const doubleClickThreshold = 300; // milliseconds between clicks to count as double-click
+            // Separate attack functions for clarity
+            function regularAttack() {
+                if (models[currentCharacter] && !isAttacking) {
+                    // Animate with standard rotation
+                    animateAttack(models[currentCharacter], Math.PI * 2, 800);
+                    
+                    // Update score
+                    score += 10;
+                    updateScore();
+                    debug(`Attack! Score: ${score}`);
+                    
+                    // Play attack sound
+                    playAttackSound(false);
+                }
+            }
             
-            // Function to handle attacks with proper click/double-click detection
+            function specialAttack() {
+                if (models[currentCharacter] && !isAttacking) {
+                    // Animate with a more dramatic rotation for special attack
+                    animateAttack(models[currentCharacter], Math.PI * 3, 1000);
+                    
+                    // Update score
+                    score += 30;
+                    updateScore();
+                    debug(`Special Attack! Score: ${score}`);
+                    
+                    // Play special attack sound
+                    playAttackSound(true);
+                }
+            }
+            
+            // Basic click for regular attack
             canvas.addEventListener('click', (event) => {
-                const currentTime = performance.now();
-                const timeSinceLastClick = currentTime - lastClickTime;
+                // Only process clicks, not drags
+                if (!isDragging) {
+                    regularAttack();
+                }
+            });
+            
+            // Direct double-click handler for special attack
+            canvas.addEventListener('dblclick', (event) => {
+                // Cancel any event propagation
+                event.preventDefault();
+                event.stopPropagation();
                 
-                // Don't do anything if already in an attack animation
-                if (isAttacking) {
-                    return;
+                // Execute special attack
+                specialAttack();
+            });
+            
+            // Add keyboard shortcuts for attacks
+            document.addEventListener('keydown', (event) => {
+                // Space bar for regular attack
+                if (event.code === 'Space') {
+                    regularAttack();
                 }
                 
-                // Check if this is a double-click (second click within threshold)
-                if (timeSinceLastClick < doubleClickThreshold) {
-                    // Special Attack (double-click)
-                    if (models[currentCharacter]) {
-                        // Animate with a more dramatic rotation for special attack
-                        animateAttack(models[currentCharacter], Math.PI * 3, 1000);
-                        
-                        // Update score
-                        score += 30;
-                        updateScore();
-                        debug(`Special Attack! Score: ${score}`);
-                        
-                        // Play special attack sound
-                        playAttackSound(true);
-                    }
-                    
-                    // Reset click tracking to prevent triple-click issues
-                    lastClickTime = 0;
-                } else {
-                    // Regular Attack (single click)
-                    if (models[currentCharacter]) {
-                        // Wait a tiny bit to see if user double-clicks
-                        setTimeout(() => {
-                            // Only proceed if this wasn't part of a double-click
-                            if (performance.now() - lastClickTime >= doubleClickThreshold) {
-                                // Animate with standard rotation
-                                animateAttack(models[currentCharacter], Math.PI * 2, 800);
-                                
-                                // Update score
-                                score += 10;
-                                updateScore();
-                                debug(`Attack! Score: ${score}`);
-                                
-                                // Play attack sound
-                                playAttackSound(false);
-                            }
-                        }, doubleClickThreshold);
-                    }
-                    
-                    // Update last click time
-                    lastClickTime = currentTime;
+                // Enter key for special attack
+                if (event.code === 'Enter') {
+                    specialAttack();
                 }
             });
             
@@ -849,12 +853,45 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
             
+            // Mouse drag controls
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+            
+            // Mouse controls for camera rotation
+            canvas.addEventListener('mousedown', (event) => {
+                isDragging = true;
+                previousMousePosition = { x: event.clientX, y: event.clientY };
+            });
+            
+            canvas.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+            
+            canvas.addEventListener('mouseleave', () => {
+                isDragging = false;
+            });
+            
+            canvas.addEventListener('mousemove', (event) => {
+                if (isDragging && !isAttacking) {
+                    // Calculate how much the mouse has moved
+                    const deltaX = event.clientX - previousMousePosition.x;
+                    const deltaY = event.clientY - previousMousePosition.y;
+                    previousMousePosition = { x: event.clientX, y: event.clientY };
+                    
+                    // Rotate the active model based on mouse movement
+                    if (models[currentCharacter]) {
+                        models[currentCharacter].rotation.y += deltaX * 0.01;
+                        models[currentCharacter].rotation.x += deltaY * 0.01;
+                    }
+                }
+            });
+            
             // Animation loop
             function animate() {
                 requestAnimationFrame(animate);
                 
-                // Add gentle idle side-to-side rotation (only when not attacking)
-                if (!isAttacking) {
+                // Add gentle idle side-to-side rotation (only when not attacking and not dragging)
+                if (!isAttacking && !isDragging) {
                     for (const name in models) {
                         if (models[name] && models[name].visible) {
                             // Gentle Y-axis (left-to-right) rotation
