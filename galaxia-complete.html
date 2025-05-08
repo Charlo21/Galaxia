@@ -853,37 +853,73 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
             
-            // Mouse drag controls
+            // Variables for mouse drag rotation
             let isDragging = false;
             let previousMousePosition = { x: 0, y: 0 };
-            
-            // Mouse controls for camera rotation
-            canvas.addEventListener('mousedown', (event) => {
-                isDragging = true;
-                previousMousePosition = { x: event.clientX, y: event.clientY };
-            });
-            
-            canvas.addEventListener('mouseup', () => {
-                isDragging = false;
-            });
-            
-            canvas.addEventListener('mouseleave', () => {
-                isDragging = false;
-            });
-            
-            canvas.addEventListener('mousemove', (event) => {
-                if (isDragging && !isAttacking) {
-                    // Calculate how much the mouse has moved
-                    const deltaX = event.clientX - previousMousePosition.x;
-                    const deltaY = event.clientY - previousMousePosition.y;
+            let clickStartTime = 0;
+            let hasMoved = false;
+
+            // Mouse down - start potential drag or click
+            document.addEventListener('mousedown', (event) => {
+                // Only track left mouse button
+                if (event.button === 0) {
+                    isDragging = true;
+                    hasMoved = false;
+                    clickStartTime = Date.now();
                     previousMousePosition = { x: event.clientX, y: event.clientY };
                     
-                    // Rotate the active model based on mouse movement
-                    if (models[currentCharacter]) {
-                        models[currentCharacter].rotation.y += deltaX * 0.01;
-                        models[currentCharacter].rotation.x += deltaY * 0.01;
-                    }
+                    // Prevent default behavior to avoid text selection
+                    event.preventDefault();
                 }
+            });
+            
+            // Mouse move - handle rotation if dragging
+            document.addEventListener('mousemove', (event) => {
+                if (isDragging) {
+                    const deltaX = event.clientX - previousMousePosition.x;
+                    const deltaY = event.clientY - previousMousePosition.y;
+                    
+                    // If moved significantly, mark as moved
+                    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+                        hasMoved = true;
+                    }
+                    
+                    // Apply rotation to current character
+                    if (models[currentCharacter] && !isAttacking) {
+                        // Rotate more on the Y axis (left-right) for better visualization
+                        models[currentCharacter].rotation.y += deltaX * 0.01;
+                        
+                        // Limit X rotation (up-down) to prevent flipping
+                        const newXRotation = models[currentCharacter].rotation.x + (deltaY * 0.005);
+                        models[currentCharacter].rotation.x = Math.max(-0.5, Math.min(0.5, newXRotation));
+                        
+                        // Log rotation for debugging
+                        debug(`Model rotation: ${models[currentCharacter].rotation.y.toFixed(2)}, ${models[currentCharacter].rotation.x.toFixed(2)}`);
+                    }
+                    
+                    // Update position for next frame
+                    previousMousePosition = { x: event.clientX, y: event.clientY };
+                }
+            });
+            
+            // Mouse up - end drag and possibly trigger click
+            document.addEventListener('mouseup', (event) => {
+                // Only process left mouse button
+                if (event.button === 0) {
+                    // If it was a quick click without much movement, treat as attack
+                    const clickDuration = Date.now() - clickStartTime;
+                    if (!hasMoved && clickDuration < 200 && !isAttacking) {
+                        regularAttack();
+                    }
+                    
+                    // End drag state
+                    isDragging = false;
+                }
+            });
+            
+            // Mouse leave - cancel drag if mouse leaves window
+            document.addEventListener('mouseleave', () => {
+                isDragging = false;
             });
             
             // Animation loop
@@ -903,6 +939,8 @@
                         }
                     }
                 }
+                
+                // No orbit controls to update
                 
                 // Render the scene
                 renderer.render(scene, camera);
