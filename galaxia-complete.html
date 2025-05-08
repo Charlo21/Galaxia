@@ -193,7 +193,6 @@
             <button id="change-background" class="control-button">Change Background</button>
         </div>
         
-        <!-- Bottom character controls -->
         <div id="controls">
             <div class="button-group">
                 <button id="mastiffButton" class="character-btn">Tibetan Mastiff</button>
@@ -366,71 +365,58 @@
             debug('Setting up music system');
             let audioPlayer = new Audio();
             audioPlayer.volume = 0.5;
-            // Function to play attack sound based on current character
-            function playAttackSound(isSpecial) {
-                debug(`Playing ${isSpecial ? 'special' : 'regular'} attack sound for ${currentCharacter}`);
-                let soundPath = '';
-                
-                // Get the appropriate sound path based on character and attack type with proper URL encoding
-                switch (currentCharacter) {
-                    case 'tibetanMastiff':
-                        soundPath = 'front-end/assets/sounds/effects/dog_attack.mp3.wav';
-                        break;
-                    case 'sumatranTiger':
-                        if (isSpecial) {
-                            soundPath = 'front-end/assets/sounds/effects/cat_phaser attack.mp3.wav';
-                        } else {
-                            soundPath = 'front-end/assets/sounds/effects/cat_sword attack.mp3.wav';
-                        }
-                        break;
-                    case 'galaxyShip':
-                        if (isSpecial) {
-                            soundPath = 'front-end/assets/sounds/effects/ship_photon torpedo.mp3.wav';
-                        } else {
-                            soundPath = 'front-end/assets/sounds/effects/ship_phase cannon.mp3.wav';
-                        }
-                        break;
-                }
-                
-                if (soundPath) {
-                    try {
-                        // Create a fresh Audio object for each play to avoid caching issues
-                        const attackSound = new Audio(soundPath);
-                        attackSound.volume = 0.4; // Set a reasonable volume
-                        attackSound.play().then(() => {
-                            debug('Attack sound played successfully');
-                        }).catch(error => {
-                            console.error('Error playing attack sound:', error);
-                            debug(`Attack sound failed to play: ${error.message}`);
-                        });
-                        
-                        // Add a small visual feedback for attacks
-                        const flash = document.createElement('div');
-                        flash.style.position = 'fixed';
-                        flash.style.left = '0';
-                        flash.style.top = '0';
-                        flash.style.width = '100%';
-                        flash.style.height = '100%';
-                        flash.style.backgroundColor = isSpecial ? 'rgba(255,0,0,0.1)' : 'rgba(255,255,255,0.05)';
-                        flash.style.pointerEvents = 'none';
-                        flash.style.zIndex = '1000';
-                        flash.style.transition = 'opacity 0.3s';
-                        document.body.appendChild(flash);
-                        
-                        // Remove the flash after a short delay
-                        setTimeout(() => {
-                            flash.style.opacity = '0';
-                            setTimeout(() => document.body.removeChild(flash), 300);
-                        }, 100);
-                        
-                    } catch (e) {
+            audioPlayer.loop = false;
+            let currentTrack = '';
+            let isMuted = false;
+            
+            // Create preloaded audio elements for each sound effect
+            debug('Preloading sound effects');
+            
+            // Use Raw GitHub URLs for direct access to sound files
+            const soundPaths = {
+                dog_attack: [
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_attack.mp3.wav'
+                ],
+                cat_sword: [
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_sword attack.mp3.wav'
+                ],
+                cat_phaser: [
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_phaser attack.mp3.wav'
+                ],
+                ship_cannon: [
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_phase cannon.mp3.wav'
+                ],
+                ship_torpedo: [
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_photon torpedo.mp3.wav'
+                ]
             };
-            attackSound.onerror = (e) => {
-                debug(`Sound loading error: ${e.target.error ? e.target.error.message : 'Unknown error'}`);
-                // Try an alternative extension as fallback
-                const altSound = new Audio(soundPath.replace('.mp3.wav', '.wav'));
-                altSound.volume = 0.4;
-                altSound.play().catch(e => debug(`Fallback sound failed too: ${e.message}`));
+            
+            // Create direct audio elements using raw GitHub URLs
+            const createSoundElement = function(id) {
+                debug(`Creating sound element for: ${id}`);
+                // Create a simple Audio object with the direct URL
+                const audioElement = new Audio(soundPaths[id][0]);
+                audioElement.id = id;
+                audioElement.preload = 'auto';
+                
+                // Log successful loading
+                audioElement.addEventListener('canplaythrough', function() {
+                    debug(`✅ Sound loaded successfully: ${id}`);
+                });
+                
+                // Handle errors
+                audioElement.addEventListener('error', function(e) {
+                    debug(`❌ Error loading sound: ${id} - Error code: ${e.target.error ? e.target.error.code : 'unknown'}`);
+                    debug(`Failed URL: ${soundPaths[id][0]}`);
+                });
+                
+                return audioElement;
+            };
+            
+            // Create all the audio elements
+            const soundEffects = {
+                tibetanMastiff: {
+                    attack: createSoundElement('dog_attack'),
                     specialAttack: createSoundElement('dog_attack')
                 },
                 sumatranTiger: {
@@ -454,22 +440,22 @@
             // Initialize sound effects volume
             setSoundEffectsVolume(0.5);
             
-            // List of music tracks with GitHub Pages URLs
+            // List of music tracks with raw GitHub URLs for better compatibility
             const musicTracks = [
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Cosmic Pulse.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Galaxia Combat 01.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/High-Energy Techno & Industrial 2.1.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/High-Energy Techno & Industrial 2.2.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 1.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.1.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.2.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Industrial Orbit.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Nebula Core 1.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Nebula Core 2.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Quantum Circuitry 1.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Quantum Circuitry 2.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Stellar Drift 1.mp3',
-                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Stellar Drift 2.mp3'
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/Cosmic Pulse.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/Galaxia Combat 01.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/High-Energy Techno & Industrial 2.1.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/High-Energy Techno & Industrial 2.2.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 1.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.1.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.2.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/Industrial Orbit.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/Nebula Core 1.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/Nebula Core 2.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/Quantum Circuitry 1.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/Quantum Circuitry 2.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/Stellar Drift 1.mp3',
+                'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/music/Stellar Drift 2.mp3'
             ];
             
             // Track the last played index to avoid repeats
@@ -623,11 +609,11 @@
             function loadModels() {
                 debug('Loading 3D models from GitHub');
                 
-                // Try different base URLs for models (with and without front-end prefix)
+                // Use raw GitHub URLs that are more reliable
                 const baseUrls = [
-                    'https://charlo21.github.io/Galaxia/assets/models/',
-                    'https://charlo21.github.io/Galaxia/front-end/assets/models/',
-                    'https://charlo21.github.io/Galaxia/models/',
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/models/',
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/models/',
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/models/',
                 ];
                 
                 // Function to try loading model from different paths
