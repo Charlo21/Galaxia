@@ -260,20 +260,20 @@
             directionalLight.position.set(0, 1, 1);
             scene.add(directionalLight);
             
-            // Set up background system with TV fantasy art
+            // Set up background system with fantasy art
             debug('Setting up background system');
             const backgroundTexture = new THREE.TextureLoader();
             let currentBackground = null;
             const backgroundSphere = new THREE.Mesh(
-                new THREE.SphereGeometry(500, 60, 40), // Increase sphere size to make backgrounds appear less zoomed in
+                new THREE.SphereGeometry(500, 60, 40),
                 new THREE.MeshBasicMaterial({ color: 0x000000 })
             );
             // Flip the geometry inside out
             backgroundSphere.scale.x = -1;
             scene.add(backgroundSphere);
             
-            // Position camera to see the background properly
-            camera.position.z = 2; // Keep it slightly forward to see 3D models
+            // Position camera to see both background and models clearly
+            camera.position.z = 5;
             
             // List of background images - using GitHub Pages URLs
             const backgroundImages = [
@@ -748,57 +748,46 @@
                     });
             }
             
-            // Simple animation parameters
+            // Simple animation and attack handling
             let isAttacking = false;
-            let attackTimeoutId = null;
             
             // Function to perform a regular attack
             function regularAttack() {
                 if (models[currentCharacter] && !isAttacking) {
-                    // Prevent attacks while one is in progress
                     isAttacking = true;
                     
-                    // Rotate the model slightly to show attack
-                    models[currentCharacter].rotation.y += 0.5;
+                    // Rotate the model for attack animation
+                    models[currentCharacter].rotation.y += Math.PI / 4;
                     
                     // Update score
                     score += 10;
                     updateScore();
-                    debug(`Attack! Score: ${score}`);
                     
                     // Play attack sound
                     playAttackSound(false);
                     
-                    // End attack state after a short delay
-                    clearTimeout(attackTimeoutId);
-                    attackTimeoutId = setTimeout(() => {
-                        isAttacking = false;
-                    }, 300);
+                    // Allow new attacks after a short delay
+                    setTimeout(() => { isAttacking = false; }, 300);
                 }
             }
             
             // Function to perform a special attack
             function specialAttack() {
                 if (models[currentCharacter] && !isAttacking) {
-                    // Prevent attacks while one is in progress
                     isAttacking = true;
                     
-                    // Rotate the model more to show special attack
-                    models[currentCharacter].rotation.y += 1.5;
+                    // Rotate the model more for special attack animation
+                    models[currentCharacter].rotation.y += Math.PI / 2;
                     
                     // Update score
                     score += 30;
                     updateScore();
-                    debug(`Special Attack! Score: ${score}`);
                     
                     // Play special attack sound
                     playAttackSound(true);
                     
-                    // End attack state after a short delay
-                    clearTimeout(attackTimeoutId);
-                    attackTimeoutId = setTimeout(() => {
-                        isAttacking = false;
-                    }, 500);
+                    // Allow new attacks after a short delay
+                    setTimeout(() => { isAttacking = false; }, 500);
                 }
             }
             
@@ -833,20 +822,18 @@
                 }
             }
             
-            // Simple click handler for regular attack
+            // Basic click handler for attack
             canvas.addEventListener('click', function(event) {
-                // Ignore the click if we're dragging
-                if (isDragging) return;
-                
-                regularAttack();
+                // Only attack if not dragging
+                if (!isDragging) {
+                    regularAttack();
+                }
             });
             
-            // Simple double-click handler for special attack
+            // Standard double-click handler for special attack
             canvas.addEventListener('dblclick', function(event) {
-                // Prevent default behavior (text selection, etc)
                 event.preventDefault();
                 event.stopPropagation();
-                
                 specialAttack();
             });
             
@@ -876,42 +863,41 @@
                 debug('Special attack triggered by button');
             });
             
-            // Simple drag rotation variables
+            // Basic drag rotation system
             let isDragging = false;
             let previousMousePosition = { x: 0, y: 0 };
             
-            // Mouse down to start dragging
+            // Start dragging on mouse down
             canvas.addEventListener('mousedown', function(event) {
-                // Only track left mouse button
-                if (event.button === 0) {
+                if (event.button === 0) { // Left mouse button only
                     isDragging = true;
                     previousMousePosition = { x: event.clientX, y: event.clientY };
                 }
             });
             
-            // Mouse move to rotate the model
+            // Rotate model on mouse move while dragging
             canvas.addEventListener('mousemove', function(event) {
-                // Rotate the model if dragging and not attacking
-                if (isDragging && !isAttacking && models[currentCharacter]) {
+                if (isDragging && models[currentCharacter] && !isAttacking) {
                     const deltaX = event.clientX - previousMousePosition.x;
                     const deltaY = event.clientY - previousMousePosition.y;
                     
-                    // Apply rotation
+                    // Apply rotation with limits to prevent flipping
                     models[currentCharacter].rotation.y += deltaX * 0.01;
-                    models[currentCharacter].rotation.x += deltaY * 0.01;
                     
-                    // Update position for next calculation
+                    // Limit vertical rotation to prevent model flipping over
+                    const newRotationX = models[currentCharacter].rotation.x + deltaY * 0.01;
+                    models[currentCharacter].rotation.x = Math.max(-0.5, Math.min(0.5, newRotationX));
+                    
                     previousMousePosition = { x: event.clientX, y: event.clientY };
                 }
             });
             
-            // Mouse up to end dragging
-            canvas.addEventListener('mouseup', function() {
+            // End dragging on mouse up or leave
+            document.addEventListener('mouseup', function() {
                 isDragging = false;
             });
             
-            // Mouse leave to handle if cursor leaves the canvas
-            canvas.addEventListener('mouseleave', function() {
+            document.addEventListener('mouseleave', function() {
                 isDragging = false;
             });
             
@@ -927,12 +913,16 @@
             function animate() {
                 requestAnimationFrame(animate);
                 
-                // Add gentle rotation animation to active model when not dragging
-                if (!isDragging) {
+                // Add gentle idle animation when not dragging or attacking
+                if (!isDragging && !isAttacking) {
                     for (const name in models) {
                         if (models[name] && models[name].visible) {
-                            // Gentle Y-axis (side-to-side) rotation
-                            models[name].rotation.y += 0.01;
+                            // Very subtle rotation
+                            models[name].rotation.y += 0.003;
+                            
+                            // Add slight floating effect
+                            const time = Date.now() * 0.001;
+                            models[name].position.y = Math.sin(time) * 0.05;
                         }
                     }
                 }
