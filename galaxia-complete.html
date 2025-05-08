@@ -188,13 +188,19 @@
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
         <div id="controls">
-            <button id="mastiffButton" class="character-btn">Tibetan Mastiff</button>
-            <button id="tigerButton" class="character-btn">Sumatran Tiger</button>
-            <button id="shipButton" class="character-btn">Galaxy Ship</button>
-        </div>
-        <div id="ui-container">
-            <div>Score: <span id="score-display">0</span></div>
-            <button id="change-background" class="control-button">Change Background</button>
+            <div class="button-group">
+                <button id="mastiffButton" class="character-btn">Tibetan Mastiff</button>
+                <button id="tigerButton" class="character-btn">Sumatran Tiger</button>
+                <button id="shipButton" class="character-btn">Galaxy Ship</button>
+            </div>
+            <div class="button-group">
+                <button id="change-background" class="control-button">Change Background</button>
+                <button id="special-attack-btn" class="control-button">Special Attack</button>
+            </div>
+            <div id="score-container">
+                <span>Score: </span>
+                <span id="score-display">0</span>
+            </div>
         </div>
         <div id="audio-controls">
             <div id="music-info">Loading music...</div>
@@ -815,22 +821,20 @@
                 }
             }
             
-            // Basic click for regular attack
-            canvas.addEventListener('click', (event) => {
-                // Only process clicks, not drags
-                if (!isDragging) {
-                    regularAttack();
-                }
-            });
-            
-            // Direct double-click handler for special attack
-            canvas.addEventListener('dblclick', (event) => {
-                // Cancel any event propagation
+            // Explicitly add double-click handler to canvas
+            canvas.addEventListener('dblclick', function(event) {
                 event.preventDefault();
                 event.stopPropagation();
-                
-                // Execute special attack
                 specialAttack();
+                debug('Special attack triggered by double-click');
+            });
+            
+            // Also add a basic click handler for regular attack
+            canvas.addEventListener('click', function(event) {
+                // Only do normal attack if not dragging
+                if (!isDragging && !isAttacking) {
+                    regularAttack();
+                }
             });
             
             // Add keyboard shortcuts for attacks
@@ -851,6 +855,12 @@
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            // Add handler for special attack button
+            document.getElementById('special-attack-btn').addEventListener('click', () => {
+                specialAttack();
+                debug('Special attack triggered by button');
             });
             
             // Mouse interaction variables
