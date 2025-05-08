@@ -384,66 +384,44 @@
             // Create preloaded audio elements for each sound effect
             debug('Preloading sound effects');
             
-            // Sound paths with variations to try
+            // Use Raw GitHub URLs for direct access to sound files
             const soundPaths = {
                 dog_attack: [
-                    'front-end/assets/sounds/effects/dog_attack.mp3.wav',
-                    'front-end/assets/sounds/effects/dog_attack.mp3',
-                    'assets/sounds/effects/dog_attack.mp3.wav',
-                    'assets/sounds/effects/dog_attack.mp3'
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_attack.mp3.wav'
                 ],
                 cat_sword: [
-                    'front-end/assets/sounds/effects/cat_sword attack.mp3.wav',
-                    'front-end/assets/sounds/effects/cat_sword attack.mp3',
-                    'assets/sounds/effects/cat_sword attack.mp3.wav',
-                    'assets/sounds/effects/cat_sword attack.mp3'
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_sword attack.mp3.wav'
                 ],
                 cat_phaser: [
-                    'front-end/assets/sounds/effects/cat_phaser attack.mp3.wav',
-                    'front-end/assets/sounds/effects/cat_phaser attack.mp3',
-                    'assets/sounds/effects/cat_phaser attack.mp3.wav',
-                    'assets/sounds/effects/cat_phaser attack.mp3'
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_phaser attack.mp3.wav'
                 ],
                 ship_cannon: [
-                    'front-end/assets/sounds/effects/ship_phase cannon.mp3.wav',
-                    'front-end/assets/sounds/effects/ship_phase cannon.mp3',
-                    'assets/sounds/effects/ship_phase cannon.mp3.wav',
-                    'assets/sounds/effects/ship_phase cannon.mp3'
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_phase cannon.mp3.wav'
                 ],
                 ship_torpedo: [
-                    'front-end/assets/sounds/effects/ship_photon torpedo.mp3.wav',
-                    'front-end/assets/sounds/effects/ship_photon torpedo.mp3',
-                    'assets/sounds/effects/ship_photon torpedo.mp3.wav',
-                    'assets/sounds/effects/ship_photon torpedo.mp3'
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_photon torpedo.mp3.wav'
                 ]
             };
             
-            // Create audio elements for each sound
+            // Create direct audio elements using raw GitHub URLs
             const createSoundElement = function(id) {
-                const audioElement = document.createElement('audio');
+                debug(`Creating sound element for: ${id}`);
+                // Create a simple Audio object with the direct URL
+                const audioElement = new Audio(soundPaths[id][0]);
                 audioElement.id = id;
                 audioElement.preload = 'auto';
                 
-                // Add sources for each path variation
-                soundPaths[id].forEach(path => {
-                    const source = document.createElement('source');
-                    source.src = path;
-                    source.type = path.endsWith('.wav') ? 'audio/wav' : 'audio/mpeg';
-                    audioElement.appendChild(source);
+                // Log successful loading
+                audioElement.addEventListener('canplaythrough', function() {
+                    debug(`✅ Sound loaded successfully: ${id}`);
                 });
                 
-                // Add error handling for this audio element
-                audioElement.onerror = function() {
-                    debug(`Failed to load sound: ${id}`);
-                };
+                // Handle errors
+                audioElement.addEventListener('error', function(e) {
+                    debug(`❌ Error loading sound: ${id} - Error code: ${e.target.error ? e.target.error.code : 'unknown'}`);
+                    debug(`Failed URL: ${soundPaths[id][0]}`);
+                });
                 
-                audioElement.oncanplaythrough = function() {
-                    debug(`Sound loaded successfully: ${id}`);
-                };
-                
-                // Add to document but hide it
-                audioElement.style.display = 'none';
-                document.body.appendChild(audioElement);
                 return audioElement;
             };
             
@@ -750,37 +728,41 @@
                 showCharacter('galaxyShip');
             });
             
-            // Function to play attack sound - simplified approach
+            // Function to play attack sound - using completely separate audio for each play
             function playAttackSound(isSpecial = false) {
                 if (!soundEffects[currentCharacter]) {
                     debug(`No sound effects found for ${currentCharacter}`);
                     return;
                 }
                 
-                // Get the appropriate sound element
-                const soundElement = isSpecial ? 
-                    soundEffects[currentCharacter].specialAttack : 
-                    soundEffects[currentCharacter].attack;
+                // Determine which sound to play
+                let soundId;
+                if (currentCharacter === 'tibetanMastiff') {
+                    soundId = 'dog_attack';
+                } else if (currentCharacter === 'sumatranTiger') {
+                    soundId = isSpecial ? 'cat_phaser' : 'cat_sword';
+                } else if (currentCharacter === 'galaxyShip') {
+                    soundId = isSpecial ? 'ship_torpedo' : 'ship_cannon';
+                }
                 
-                debug(`Playing ${isSpecial ? 'special' : 'regular'} attack sound for ${currentCharacter}`);
+                debug(`Attempting to play ${isSpecial ? 'special' : 'regular'} attack sound (${soundId}) for ${currentCharacter}`);
                 
-                // Make sure the sound can be played again
-                soundElement.currentTime = 0;
+                // Create a fresh Audio instance each time to avoid issues with concurrent playback
+                const soundURL = soundPaths[soundId][0];
+                const sound = new Audio(soundURL);
                 
                 // Set volume based on current settings
-                soundElement.volume = isMuted ? 0 : document.getElementById('volume-slider').value;
+                sound.volume = isMuted ? 0 : document.getElementById('volume-slider').value;
                 
-                // Play the sound - use a simple approach that works more reliably
-                try {
-                    soundElement.play();
-                } catch (error) {
-                    debug(`Error playing sound: ${error.message}`);
-                    
-                    // Direct attack on DOM
-                    const soundId = soundElement.id;
-                    debug(`Trying direct play of ${soundId}`);
-                    document.getElementById(soundId).play();
-                }
+                // Play and report success or failure
+                sound.play()
+                    .then(() => {
+                        debug(`✅ Successfully playing sound: ${soundId}`);
+                    })
+                    .catch(error => {
+                        debug(`❌ Error playing sound (${soundId}): ${error.message}`);
+                        debug(`Failed URL: ${soundURL}`);
+                    });
             }
             
             // Function to simulate attack
