@@ -181,20 +181,9 @@
             border-radius: 10px;
         }
         
+        /* Debug panel removed for production */
         #debug-panel {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            z-index: 2000;
-            max-width: 300px;
-            max-height: 200px;
-            overflow-y: auto;
-            color: lime;
-            font-family: monospace;
+            display: none;
         }
     </style>
 </head>
@@ -222,7 +211,6 @@
             Click to Attack | Double Click for Special Attack | Drag to Rotate View
         </div>
         <div id="loading">Loading 3D Models...</div>
-        <div id="debug-panel">Loading...<br>Check this panel for debug info</div>
     </div>
 
     <script>
@@ -230,21 +218,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Game initializing...');
             
-            // Debug logger
-            const debugPanel = document.getElementById('debug-panel');
+            // Function to add debug message - now only logs to console
             function debug(message) {
+                // Log to console only
                 console.log(message);
-                const timestamp = new Date().toLocaleTimeString();
-                debugPanel.innerHTML += `<div>[${timestamp}] ${message}</div>`;
-                debugPanel.scrollTop = debugPanel.scrollHeight;
-                
-                // Keep only the last 20 messages
-                const messages = debugPanel.getElementsByTagName('div');
-                if (messages.length > 20) {
-                    for (let i = 0; i < messages.length - 20; i++) {
-                        debugPanel.removeChild(messages[i]);
-                    }
-                }
             }
             
             debug('Starting initialization...');
