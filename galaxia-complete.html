@@ -739,36 +739,56 @@
                     });
             }
             
-            // Animation parameters for smooth rotations
-            const animations = {
-                rotations: []
-            };
+            // Animation parameters
+            let isAttacking = false;
+            let attackAnimationId = null;
             
-            // Function to smoothly animate a rotation
-            function animateRotation(model, targetRotation, duration = 500) {
-                const startRotation = model.rotation.y;
-                const rotationDistance = targetRotation - startRotation;
-                const startTime = performance.now();
+            // Function to create a smooth attack animation
+            function animateAttack(model, rotationAmount, duration = 800) {
+                if (isAttacking) {
+                    return; // Don't start a new attack while one is in progress
+                }
                 
-                // Add this animation to the queue
-                animations.rotations.push({
-                    model: model,
-                    startTime: startTime,
-                    startRotation: startRotation,
-                    targetRotation: targetRotation,
-                    rotationDistance: rotationDistance,
-                    duration: duration
-                });
+                isAttacking = true;
+                const startTime = performance.now();
+                const startRotation = model.rotation.y;
+                const targetRotation = startRotation + rotationAmount;
+                
+                // Cancel any existing animation
+                if (attackAnimationId) {
+                    cancelAnimationFrame(attackAnimationId);
+                }
+                
+                // Create smooth animation function
+                function attackAnimationStep() {
+                    const currentTime = performance.now();
+                    const elapsedTime = currentTime - startTime;
+                    const progress = Math.min(elapsedTime / duration, 1);
+                    
+                    // Smooth sine-based easing for natural movement
+                    const easedProgress = 0.5 - Math.cos(progress * Math.PI) / 2;
+                    
+                    // Update rotation
+                    model.rotation.y = startRotation + (rotationAmount * easedProgress);
+                    
+                    // Continue animation or end
+                    if (progress < 1) {
+                        attackAnimationId = requestAnimationFrame(attackAnimationStep);
+                    } else {
+                        isAttacking = false;
+                        attackAnimationId = null;
+                    }
+                }
+                
+                // Start animation
+                attackAnimationId = requestAnimationFrame(attackAnimationStep);
             }
             
             // Function to simulate attack
             canvas.addEventListener('click', () => {
-                if (models[currentCharacter]) {
-                    // Calculate target rotation (adding 0.5 to current rotation)
-                    const targetRotation = models[currentCharacter].rotation.y + 0.5;
-                    
-                    // Animate the model with a smooth rotation
-                    animateRotation(models[currentCharacter], targetRotation, 300);
+                if (models[currentCharacter] && !isAttacking) {
+                    // Animate the model with a smooth spin (360° = 2π)
+                    animateAttack(models[currentCharacter], Math.PI * 2, 800);
                     
                     // Update score
                     score += 10;
@@ -782,12 +802,9 @@
             
             // Function to simulate special attack
             canvas.addEventListener('dblclick', () => {
-                if (models[currentCharacter]) {
-                    // Calculate target rotation (adding 1.5 to current rotation)
-                    const targetRotation = models[currentCharacter].rotation.y + 1.5;
-                    
-                    // Animate the model with a smooth rotation (faster for special attack)
-                    animateRotation(models[currentCharacter], targetRotation, 400);
+                if (models[currentCharacter] && !isAttacking) {
+                    // Animate the model with a full rotation plus a bit more for special attack
+                    animateAttack(models[currentCharacter], Math.PI * 3, 1000);
                     
                     // Update score
                     score += 30;
@@ -810,35 +827,18 @@
             function animate() {
                 requestAnimationFrame(animate);
                 
-                // Process smooth rotation animations
-                const currentTime = performance.now();
-                for (let i = animations.rotations.length - 1; i >= 0; i--) {
-                    const anim = animations.rotations[i];
-                    const elapsed = currentTime - anim.startTime;
-                    const progress = Math.min(elapsed / anim.duration, 1);
-                    
-                    // Apply easing for smooth acceleration/deceleration
-                    // Using cubic ease-out for natural movement
-                    const easedProgress = 1 - Math.pow(1 - progress, 3);
-                    
-                    // Update model rotation
-                    anim.model.rotation.y = anim.startRotation + (anim.rotationDistance * easedProgress);
-                    
-                    // Remove completed animations
-                    if (progress >= 1) {
-                        animations.rotations.splice(i, 1);
+                // Add gentle idle side-to-side rotation (only when not attacking)
+                if (!isAttacking) {
+                    for (const name in models) {
+                        if (models[name] && models[name].visible) {
+                            // Gentle Y-axis (left-to-right) rotation
+                            models[name].rotation.y += 0.005;
+                            
+                            // Add subtle floating effect with sine wave
+                            const time = performance.now() * 0.001;
+                            models[name].position.y = Math.sin(time) * 0.05;
+                        }
                     }
-                }
-                
-                // Rotate models slightly for ambient animation (only when not in attack animation)
-                if (models.tibetanMastiff && !animations.rotations.some(a => a.model === models.tibetanMastiff)) {
-                    models.tibetanMastiff.rotation.x += 0.002;
-                }
-                if (models.sumatranTiger && !animations.rotations.some(a => a.model === models.sumatranTiger)) {
-                    models.sumatranTiger.rotation.x += 0.002;
-                }
-                if (models.galaxyShip && !animations.rotations.some(a => a.model === models.galaxyShip)) {
-                    models.galaxyShip.rotation.x += 0.002;
                 }
                 
                 // Render the scene
