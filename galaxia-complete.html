@@ -546,83 +546,59 @@
             function loadModels() {
                 debug('Loading 3D models from GitHub');
                 
-                // Base URL for models
-                const baseUrl = 'https://charlo21.github.io/Galaxia/assets/models/';
+                // Try different base URLs for models (with and without front-end prefix)
+                const baseUrls = [
+                    'https://charlo21.github.io/Galaxia/assets/models/',
+                    'https://charlo21.github.io/Galaxia/front-end/assets/models/',
+                    'https://charlo21.github.io/Galaxia/models/',
+                ];
+                
+                // Function to try loading model from different paths
+                function tryLoadModel(modelName, filename, color, index = 0) {
+                    if (index >= baseUrls.length) {
+                        // All URLs failed, create placeholder
+                        debug(`Failed to load ${modelName} from all paths, using placeholder`);
+                        models[modelName] = createPlaceholderModel(color);
+                        models[modelName].visible = false;
+                        scene.add(models[modelName]);
+                        checkAllModelsLoaded();
+                        return;
+                    }
+                    
+                    const url = `${baseUrls[index]}${filename}`;
+                    debug(`Trying to load ${modelName} from: ${url}`);
+                    
+                    loader.load(
+                        url,
+                        (gltf) => {
+                            models[modelName] = gltf.scene;
+                            models[modelName].visible = false;
+                            scene.add(models[modelName]);
+                            debug(`Successfully loaded ${modelName} model`);
+                            checkAllModelsLoaded();
+                        },
+                        (progress) => {
+                            if (progress.lengthComputable) {
+                                const percent = Math.round((progress.loaded / progress.total) * 100);
+                                debug(`${modelName}: ${percent}% loaded`);
+                            }
+                        },
+                        (error) => {
+                            debug(`Error loading ${modelName} from ${url}: ${error.message}`);
+                            // Try next URL
+                            tryLoadModel(modelName, filename, color, index + 1);
+                        }
+                    );
+                }
                 
                 // Load Tibetan Mastiff
-                loader.load(
-                    `${baseUrl}tibetan_mastiff.glb`,
-                    (gltf) => {
-                        models.tibetanMastiff = gltf.scene;
-                        models.tibetanMastiff.visible = false;
-                        scene.add(models.tibetanMastiff);
-                        debug('Tibetan Mastiff model loaded');
-                        checkAllModelsLoaded();
-                    },
-                    (progress) => {
-                        if (progress.lengthComputable) {
-                            const percent = Math.round((progress.loaded / progress.total) * 100);
-                            debug(`Mastiff: ${percent}% loaded`);
-                        }
-                    },
-                    (error) => {
-                        debug(`Error loading Mastiff model: ${error.message}`);
-                        models.tibetanMastiff = createPlaceholderModel(0x8B4513);
-                        models.tibetanMastiff.visible = false;
-                        scene.add(models.tibetanMastiff);
-                        checkAllModelsLoaded();
-                    }
-                );
+                tryLoadModel('tibetanMastiff', 'tibetan_mastiff.glb', 0x8B4513);
                 
                 // Load Sumatran Tiger
-                loader.load(
-                    `${baseUrl}sumatran_tiger.glb`,
-                    (gltf) => {
-                        models.sumatranTiger = gltf.scene;
-                        models.sumatranTiger.visible = false;
-                        scene.add(models.sumatranTiger);
-                        debug('Sumatran Tiger model loaded');
-                        checkAllModelsLoaded();
-                    },
-                    (progress) => {
-                        if (progress.lengthComputable) {
-                            const percent = Math.round((progress.loaded / progress.total) * 100);
-                            debug(`Tiger: ${percent}% loaded`);
-                        }
-                    },
-                    (error) => {
-                        debug(`Error loading Tiger model: ${error.message}`);
-                        models.sumatranTiger = createPlaceholderModel(0xFF4500);
-                        models.sumatranTiger.visible = false;
-                        scene.add(models.sumatranTiger);
-                        checkAllModelsLoaded();
-                    }
-                );
+                tryLoadModel('sumatranTiger', 'sumatran_tiger.glb', 0xFF4500);
                 
                 // Load Galaxy Ship
-                loader.load(
-                    `${baseUrl}spaceship.glb`,
-                    (gltf) => {
-                        models.galaxyShip = gltf.scene;
-                        models.galaxyShip.visible = false;
-                        scene.add(models.galaxyShip);
-                        debug('Galaxy Ship model loaded');
-                        checkAllModelsLoaded();
-                    },
-                    (progress) => {
-                        if (progress.lengthComputable) {
-                            const percent = Math.round((progress.loaded / progress.total) * 100);
-                            debug(`Ship: ${percent}% loaded`);
-                        }
-                    },
-                    (error) => {
-                        debug(`Error loading Ship model: ${error.message}`);
-                        models.galaxyShip = createPlaceholderModel(0x4169E1);
-                        models.galaxyShip.visible = false;
-                        scene.add(models.galaxyShip);
-                        checkAllModelsLoaded();
-                    }
-                );
+                tryLoadModel('galaxyShip', 'spaceship.glb', 0x4169E1);
             }
             
             // Check if all models have been loaded
