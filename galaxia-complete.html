@@ -853,11 +853,12 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
             
-            // Variables for mouse drag rotation
+            // Mouse interaction variables
             let isDragging = false;
             let previousMousePosition = { x: 0, y: 0 };
-            let clickStartTime = 0;
+            let lastClickTime = 0;
             let hasMoved = false;
+            const doubleClickThreshold = 300; // ms between clicks to count as double-click
 
             // Mouse down - start potential drag or click
             document.addEventListener('mousedown', (event) => {
@@ -865,7 +866,6 @@
                 if (event.button === 0) {
                     isDragging = true;
                     hasMoved = false;
-                    clickStartTime = Date.now();
                     previousMousePosition = { x: event.clientX, y: event.clientY };
                     
                     // Prevent default behavior to avoid text selection
@@ -892,9 +892,6 @@
                         // Limit X rotation (up-down) to prevent flipping
                         const newXRotation = models[currentCharacter].rotation.x + (deltaY * 0.005);
                         models[currentCharacter].rotation.x = Math.max(-0.5, Math.min(0.5, newXRotation));
-                        
-                        // Log rotation for debugging
-                        debug(`Model rotation: ${models[currentCharacter].rotation.y.toFixed(2)}, ${models[currentCharacter].rotation.x.toFixed(2)}`);
                     }
                     
                     // Update position for next frame
@@ -902,17 +899,31 @@
                 }
             });
             
-            // Mouse up - end drag and possibly trigger click
+            // Mouse up - end drag and detect clicks and double-clicks
             document.addEventListener('mouseup', (event) => {
                 // Only process left mouse button
                 if (event.button === 0) {
-                    // If it was a quick click without much movement, treat as attack
-                    const clickDuration = Date.now() - clickStartTime;
-                    if (!hasMoved && clickDuration < 200 && !isAttacking) {
-                        regularAttack();
+                    // Calculate time since last click
+                    const currentTime = Date.now();
+                    const timeSinceLastClick = currentTime - lastClickTime;
+                    
+                    // If this wasn't a drag (minimal movement)
+                    if (!hasMoved && !isAttacking) {
+                        // Check if it's a double click (second click within threshold)
+                        if (timeSinceLastClick < doubleClickThreshold) {
+                            // This is a double-click - special attack!
+                            specialAttack();
+                            // Reset click tracking
+                            lastClickTime = 0;
+                        } else {
+                            // This is a single click - regular attack
+                            regularAttack();
+                            // Update last click time for double-click detection
+                            lastClickTime = currentTime;
+                        }
                     }
                     
-                    // End drag state
+                    // End drag state regardless
                     isDragging = false;
                 }
             });
@@ -920,6 +931,15 @@
             // Mouse leave - cancel drag if mouse leaves window
             document.addEventListener('mouseleave', () => {
                 isDragging = false;
+            });
+            
+            // Add keyboard shortcuts as a reliable alternative
+            document.addEventListener('keydown', (event) => {
+                if (event.code === 'Space') { 
+                    regularAttack(); // Space for regular attack
+                } else if (event.code === 'Enter') {
+                    specialAttack(); // Enter for special attack
+                }
             });
             
             // Animation loop
