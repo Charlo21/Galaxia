@@ -381,6 +381,34 @@
             let currentTrack = '';
             let isMuted = false;
             
+            // Set up sound effects
+            debug('Setting up sound effects');
+            const soundEffects = {
+                tibetanMastiff: {
+                    attack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/dog_attack.mp3.wav'),
+                    specialAttack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/dog_attack.mp3.wav')
+                },
+                sumatranTiger: {
+                    attack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/cat_sword attack.mp3.wav'),
+                    specialAttack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/cat_phaser attack.mp3.wav')
+                },
+                galaxyShip: {
+                    attack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/ship_phase cannon.mp3.wav'),
+                    specialAttack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/ship_photon torpedo.mp3.wav')
+                }
+            };
+            
+            // Set volume for all sound effects
+            function setSoundEffectsVolume(volume) {
+                for (const character in soundEffects) {
+                    soundEffects[character].attack.volume = volume;
+                    soundEffects[character].specialAttack.volume = volume;
+                }
+            }
+            
+            // Initialize sound effects volume
+            setSoundEffectsVolume(0.5);
+            
             // List of music tracks with GitHub Pages URLs
             const musicTracks = [
                 'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Cosmic Pulse.mp3',
@@ -502,11 +530,13 @@
             
             // Set up volume and mute controls
             document.getElementById('volume-slider').addEventListener('input', (e) => {
-                audioPlayer.volume = e.target.value;
-                debug(`Volume changed to: ${e.target.value}`);
+                const volume = e.target.value;
+                audioPlayer.volume = volume;
+                setSoundEffectsVolume(volume); // Also update sound effects volume
+                debug(`Volume changed to: ${volume}`);
                 
                 // Update mute button based on volume
-                if (parseFloat(e.target.value) === 0) {
+                if (parseFloat(volume) === 0) {
                     document.getElementById('mute-button').textContent = '🔇';
                     isMuted = true;
                 } else {
@@ -520,12 +550,14 @@
                 if (isMuted) {
                     // Unmute
                     audioPlayer.volume = volumeSlider.value;
+                    setSoundEffectsVolume(volumeSlider.value); // Also unmute sound effects
                     document.getElementById('mute-button').textContent = '🔊';
                     isMuted = false;
                     debug('Audio unmuted');
                 } else {
                     // Mute
                     audioPlayer.volume = 0;
+                    setSoundEffectsVolume(0); // Also mute sound effects
                     document.getElementById('mute-button').textContent = '🔇';
                     isMuted = true;
                     debug('Audio muted');
@@ -653,6 +685,32 @@
                 showCharacter('galaxyShip');
             });
             
+            // Function to play attack sound
+            function playAttackSound(isSpecial = false) {
+                if (!soundEffects[currentCharacter]) {
+                    debug(`No sound effects found for ${currentCharacter}`);
+                    return;
+                }
+                
+                // Clone the audio to allow overlapping sounds
+                const soundToPlay = isSpecial ? 
+                    soundEffects[currentCharacter].specialAttack : 
+                    soundEffects[currentCharacter].attack;
+                
+                // Create a new instance to allow overlapping sounds
+                const sound = soundToPlay.cloneNode();
+                sound.volume = isMuted ? 0 : document.getElementById('volume-slider').value;
+                
+                // Play the sound
+                sound.play()
+                    .then(() => {
+                        debug(`Playing ${isSpecial ? 'special ' : ''}attack sound for ${currentCharacter}`);
+                    })
+                    .catch(error => {
+                        debug(`Error playing attack sound: ${error.message}`);
+                    });
+            }
+            
             // Function to simulate attack
             canvas.addEventListener('click', () => {
                 if (models[currentCharacter]) {
@@ -661,6 +719,9 @@
                     score += 10;
                     updateScore();
                     debug(`Attack! Score: ${score}`);
+                    
+                    // Play attack sound
+                    playAttackSound(false);
                 }
             });
             
@@ -672,6 +733,9 @@
                     score += 30;
                     updateScore();
                     debug(`Special Attack! Score: ${score}`);
+                    
+                    // Play special attack sound
+                    playAttackSound(true);
                 }
             });
             
