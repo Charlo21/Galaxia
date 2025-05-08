@@ -784,35 +784,61 @@
                 attackAnimationId = requestAnimationFrame(attackAnimationStep);
             }
             
-            // Function to simulate attack
-            canvas.addEventListener('click', () => {
-                if (models[currentCharacter] && !isAttacking) {
-                    // Animate the model with a smooth spin (360° = 2π)
-                    animateAttack(models[currentCharacter], Math.PI * 2, 800);
-                    
-                    // Update score
-                    score += 10;
-                    updateScore();
-                    debug(`Attack! Score: ${score}`);
-                    
-                    // Play attack sound
-                    playAttackSound(false);
-                }
-            });
+            // Track clicks for double-click detection
+            let lastClickTime = 0;
+            const doubleClickThreshold = 300; // milliseconds between clicks to count as double-click
             
-            // Function to simulate special attack
-            canvas.addEventListener('dblclick', () => {
-                if (models[currentCharacter] && !isAttacking) {
-                    // Animate the model with a full rotation plus a bit more for special attack
-                    animateAttack(models[currentCharacter], Math.PI * 3, 1000);
+            // Function to handle attacks with proper click/double-click detection
+            canvas.addEventListener('click', (event) => {
+                const currentTime = performance.now();
+                const timeSinceLastClick = currentTime - lastClickTime;
+                
+                // Don't do anything if already in an attack animation
+                if (isAttacking) {
+                    return;
+                }
+                
+                // Check if this is a double-click (second click within threshold)
+                if (timeSinceLastClick < doubleClickThreshold) {
+                    // Special Attack (double-click)
+                    if (models[currentCharacter]) {
+                        // Animate with a more dramatic rotation for special attack
+                        animateAttack(models[currentCharacter], Math.PI * 3, 1000);
+                        
+                        // Update score
+                        score += 30;
+                        updateScore();
+                        debug(`Special Attack! Score: ${score}`);
+                        
+                        // Play special attack sound
+                        playAttackSound(true);
+                    }
                     
-                    // Update score
-                    score += 30;
-                    updateScore();
-                    debug(`Special Attack! Score: ${score}`);
+                    // Reset click tracking to prevent triple-click issues
+                    lastClickTime = 0;
+                } else {
+                    // Regular Attack (single click)
+                    if (models[currentCharacter]) {
+                        // Wait a tiny bit to see if user double-clicks
+                        setTimeout(() => {
+                            // Only proceed if this wasn't part of a double-click
+                            if (performance.now() - lastClickTime >= doubleClickThreshold) {
+                                // Animate with standard rotation
+                                animateAttack(models[currentCharacter], Math.PI * 2, 800);
+                                
+                                // Update score
+                                score += 10;
+                                updateScore();
+                                debug(`Attack! Score: ${score}`);
+                                
+                                // Play attack sound
+                                playAttackSound(false);
+                            }
+                        }, doubleClickThreshold);
+                    }
                     
-                    // Play special attack sound
-                    playAttackSound(true);
+                    // Update last click time
+                    lastClickTime = currentTime;
                 }
             });
             
