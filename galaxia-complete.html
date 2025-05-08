@@ -381,20 +381,20 @@
             let currentTrack = '';
             let isMuted = false;
             
-            // Set up sound effects
+            // Set up sound effects - using alternative paths
             debug('Setting up sound effects');
             const soundEffects = {
                 tibetanMastiff: {
-                    attack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/dog_attack.mp3.wav'),
-                    specialAttack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/dog_attack.mp3.wav')
+                    attack: new Audio('front-end/assets/sounds/effects/dog_attack.mp3'),
+                    specialAttack: new Audio('front-end/assets/sounds/effects/dog_attack.mp3')
                 },
                 sumatranTiger: {
-                    attack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/cat_sword attack.mp3.wav'),
-                    specialAttack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/cat_phaser attack.mp3.wav')
+                    attack: new Audio('front-end/assets/sounds/effects/cat_sword attack.mp3'),
+                    specialAttack: new Audio('front-end/assets/sounds/effects/cat_phaser attack.mp3')
                 },
                 galaxyShip: {
-                    attack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/ship_phase cannon.mp3.wav'),
-                    specialAttack: new Audio('https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/ship_photon torpedo.mp3.wav')
+                    attack: new Audio('front-end/assets/sounds/effects/ship_phase cannon.mp3'),
+                    specialAttack: new Audio('front-end/assets/sounds/effects/ship_photon torpedo.mp3')
                 }
             };
             
@@ -685,30 +685,57 @@
                 showCharacter('galaxyShip');
             });
             
-            // Function to play attack sound
+            // Function to play attack sound with fallback paths
             function playAttackSound(isSpecial = false) {
                 if (!soundEffects[currentCharacter]) {
                     debug(`No sound effects found for ${currentCharacter}`);
                     return;
                 }
                 
-                // Clone the audio to allow overlapping sounds
+                // Get the appropriate sound
                 const soundToPlay = isSpecial ? 
                     soundEffects[currentCharacter].specialAttack : 
                     soundEffects[currentCharacter].attack;
                 
-                // Create a new instance to allow overlapping sounds
-                const sound = soundToPlay.cloneNode();
+                // Create a new Audio element for this sound (don't use cloneNode as it may not be loaded yet)
+                const soundType = isSpecial ? 'specialAttack' : 'attack';
+                let effectPath = '';
+                
+                // Determine the correct path based on the character
+                if (currentCharacter === 'tibetanMastiff') {
+                    effectPath = 'dog_attack.mp3';
+                } else if (currentCharacter === 'sumatranTiger') {
+                    effectPath = isSpecial ? 'cat_phaser attack.mp3' : 'cat_sword attack.mp3';
+                } else if (currentCharacter === 'galaxyShip') {
+                    effectPath = isSpecial ? 'ship_photon torpedo.mp3' : 'ship_phase cannon.mp3';
+                }
+                
+                debug(`Trying to play sound effect: ${effectPath}`);
+                
+                // Try multiple paths
+                const sound = new Audio(`front-end/assets/sounds/effects/${effectPath}`);
                 sound.volume = isMuted ? 0 : document.getElementById('volume-slider').value;
                 
-                // Play the sound
+                // Set up error handling for the first path
+                sound.onerror = () => {
+                    debug(`Failed to play from relative path, trying GitHub URL`);
+                    const githubSound = new Audio(`https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/${effectPath}`);
+                    githubSound.volume = isMuted ? 0 : document.getElementById('volume-slider').value;
+                    
+                    // GitHub URL error handling
+                    githubSound.onerror = () => {
+                        debug(`Failed to play from GitHub URL too`);
+                    };
+                    
+                    githubSound.play()
+                        .then(() => debug(`Playing ${isSpecial ? 'special ' : ''}attack sound for ${currentCharacter} from GitHub`))
+                        .catch(error => debug(`Error playing attack sound from GitHub: ${error.message}`));
+                };
+                
+                // Try to play the sound
                 sound.play()
-                    .then(() => {
-                        debug(`Playing ${isSpecial ? 'special ' : ''}attack sound for ${currentCharacter}`);
-                    })
-                    .catch(error => {
-                        debug(`Error playing attack sound: ${error.message}`);
-                    });
+                    .then(() => debug(`Playing ${isSpecial ? 'special ' : ''}attack sound for ${currentCharacter}`))
+                    .catch(error => debug(`Error playing attack sound: ${error.message}`));
             }
             
             // Function to simulate attack
