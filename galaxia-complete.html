@@ -265,12 +265,15 @@
             const backgroundTexture = new THREE.TextureLoader();
             let currentBackground = null;
             const backgroundSphere = new THREE.Mesh(
-                new THREE.SphereGeometry(50, 60, 40), // Reduced from 500 to 50 to make backgrounds less zoomed in
+                new THREE.SphereGeometry(500, 60, 40), // Increase sphere size to make backgrounds appear less zoomed in
                 new THREE.MeshBasicMaterial({ color: 0x000000 })
             );
             // Flip the geometry inside out
             backgroundSphere.scale.x = -1;
             scene.add(backgroundSphere);
+            
+            // Position camera to see the background properly
+            camera.position.z = 2; // Keep it slightly forward to see 3D models
             
             // List of background images - using GitHub Pages URLs
             const backgroundImages = [
@@ -821,19 +824,38 @@
                 }
             }
             
-            // Explicitly add double-click handler to canvas
-            canvas.addEventListener('dblclick', function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                specialAttack();
-                debug('Special attack triggered by double-click');
-            });
-            
-            // Also add a basic click handler for regular attack
+            // Use a better double-click implementation
+            // Note: Using shared lastClickTime variable from above
+            const doubleClickDelay = 250; // ms
+
+            // Single consolidated click handler for better detection
             canvas.addEventListener('click', function(event) {
-                // Only do normal attack if not dragging
-                if (!isDragging && !isAttacking) {
-                    regularAttack();
+                const currentTime = Date.now();
+                const timeSinceLastClick = currentTime - lastClickTime;
+
+                // If this is a second click within the double-click threshold
+                if (timeSinceLastClick < doubleClickDelay) {
+                    // This is a double-click
+                    event.preventDefault();
+                    specialAttack();
+                    debug('Double click special attack!');
+                    
+                    // Reset the timer to prevent triple-click issues
+                    lastClickTime = 0;
+                } else {
+                    // This might be the first click of a double-click or a single click
+                    // Wait briefly to see if a double-click follows
+                    setTimeout(() => {
+                        // If no second click came, then it was a single click
+                        const newTimeSinceLastClick = Date.now() - lastClickTime;
+                        if (newTimeSinceLastClick >= doubleClickDelay && !isAttacking && !isDragging) {
+                            regularAttack();
+                            debug('Single click attack');
+                        }
+                    }, doubleClickDelay);
+                    
+                    // Update the timestamp for the first click
+                    lastClickTime = currentTime;
                 }
             });
             
@@ -866,7 +888,7 @@
             // Mouse interaction variables
             let isDragging = false;
             let previousMousePosition = { x: 0, y: 0 };
-            let lastClickTime = 0;
+            // We'll use a shared lastClickTime for all click detection
             let hasMoved = false;
             const doubleClickThreshold = 300; // ms between clicks to count as double-click
 
