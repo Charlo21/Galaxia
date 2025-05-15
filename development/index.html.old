@@ -154,7 +154,7 @@
             padding: 20px 40px;
             border-radius: 10px;
         }
-
+        
         #background-info {
             position: fixed;
             bottom: 20px;
@@ -168,12 +168,12 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
+        
         #background-info:hover {
             color: white;
             background: rgba(0, 0, 0, 0.9);
         }
-
+        
         #change-bg-button {
             position: fixed;
             bottom: 60px;
@@ -188,54 +188,25 @@
             z-index: 2;
             transition: all 0.3s ease;
         }
-
+        
         #change-bg-button:hover {
             background: rgba(65, 105, 225, 1);
             transform: scale(1.05);
         }
-
-        #music-player {
+        
+        #music-toggle {
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border-radius: 10px;
+            background: rgba(65, 105, 225, 0.7);
             color: white;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 10;
-            box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
-            min-width: 250px;
-            border: 1px solid #4169E1;
-            backdrop-filter: blur(5px);
-        }
-        
-        #music-player button {
-            background: linear-gradient(to bottom, #4169E1, #1E3A8A);
             border: none;
-            color: white;
-            padding: 8px;
-            border-radius: 5px;
+            padding: 8px 15px;
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-        
-        #music-player button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-        }
-        
-        #track-info {
             font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-align: center;
-            padding: 5px;
-            color: #4169E1;
+            z-index: 2;
+            transition: all 0.3s ease;
         }
     </style>
 </head>
@@ -261,15 +232,15 @@
         <div id="loading">Loading 3D Models...</div>
         <div id="background-info"></div>
         <button id="change-bg-button">Change Background</button>
-
+        
         <!-- Audio elements for sound effects -->
         <audio id="background-music" loop preload="auto"></audio>
         <audio id="tibetanMastiff-attack" preload="auto"></audio>
         <audio id="tibetanMastiff-special" preload="auto"></audio>
-
+        
         <audio id="sumatranTiger-attack" preload="auto"></audio>
         <audio id="sumatranTiger-special" preload="auto"></audio>
-
+        
         <audio id="galaxyShip-attack" preload="auto"></audio>
         <audio id="galaxyShip-special" preload="auto"></audio>
     </div>
@@ -293,13 +264,13 @@
             'Naoki Urasawa Inspired Manga.jpg',
             'Naoko Takeuchi Inspired Manga.jpg'
         ];
-
+        
         // Function to set a random background
         function setRandomBackground() {
             const randomIndex = Math.floor(Math.random() * backgroundImages.length);
             const selectedImage = backgroundImages[randomIndex];
             const imagePath = `./assets/Images/backgrounds/${selectedImage}`;
-
+            
             // Create a preloaded image to check if it exists
             const img = new Image();
             img.onload = function() {
@@ -318,34 +289,34 @@
             };
             img.src = imagePath;
         }
-
+        
         // Function to initialize audio
         function initAudio() {
             // Sound mapping with correct filenames
             const soundMap = {
                 'background-music': './assets/sounds/Galaxia Theme Music.mp3',
-
+                
                 // Mastiff sounds
                 'tibetanMastiff-attack': './assets/sounds/effects/dog_attack.mp3.wav',
                 'tibetanMastiff-special': './assets/sounds/effects/being attack_hit.mp3.wav',
-
+                
                 // Tiger sounds
                 'sumatranTiger-attack': './assets/sounds/effects/cat_sword attack.mp3.wav',
                 'sumatranTiger-special': './assets/sounds/effects/cat_phaser attack.mp3.wav',
-
+                
                 // Ship sounds
                 'galaxyShip-attack': './assets/sounds/effects/ship_phase cannon.mp3.wav',
                 'galaxyShip-special': './assets/sounds/effects/ship_photon torpedo.mp3.wav'
             };
-
+            
             // Function to create and set up a sound
             function setupSound(id, src) {
                 const sound = document.getElementById(id);
                 if (!sound) return null;
-
+                
                 // Set source
                 sound.src = src;
-
+                
                 // Handle loading errors
                 sound.onerror = function() {
                     console.error(`Error loading sound: ${src}`);
@@ -353,352 +324,75 @@
                     const alt = src.replace('.mp3.wav', '.wav');
                     console.log(`Trying alternative: ${alt}`);
                     sound.src = alt;
-
+                    
                     // Check for further errors
                     sound.onerror = function() {
                         console.error(`Failed to load sound with all extensions: ${src}`);
                     };
                 };
-
+                
                 return sound;
             }
-
+            
             // Set up all sounds
             for (const [id, src] of Object.entries(soundMap)) {
                 setupSound(id, src);
             }
-
-            // Music Tracks Library
-            const musicTracks = [
-                { name: "Galaxia Theme Music", path: "./assets/sounds/Galaxia Theme Music.mp3" },
-                { name: "Cosmic Pulse", path: "./front-end/assets/sounds/music/Cosmic Pulse.mp3" },
-                { name: "Galaxia Combat 01", path: "./front-end/assets/sounds/music/Galaxia Combat 01.mp3" },
-                { name: "High-Energy Techno & Industrial 2.1", path: "./front-end/assets/sounds/music/High-Energy Techno & Industrial 2.1.mp3" },
-                { name: "High-Energy Techno & Industrial 2.2", path: "./front-end/assets/sounds/music/High-Energy Techno & Industrial 2.2.mp3" },
-                { name: "High-Energy Techno & Industrial-Inspired 1", path: "./front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 1.mp3" },
-                { name: "High-Energy Techno & Industrial-Inspired 3.1", path: "./front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.1.mp3" },
-                { name: "High-Energy Techno & Industrial-Inspired 3.2", path: "./front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.2.mp3" },
-                { name: "Industrial Orbit", path: "./front-end/assets/sounds/music/Industrial Orbit.mp3" },
-                { name: "Nebula Core 1", path: "./front-end/assets/sounds/music/Nebula Core 1.mp3" },
-                { name: "Nebula Core 2", path: "./front-end/assets/sounds/music/Nebula Core 2.mp3" },
-                { name: "Quantum Circuitry 1", path: "./front-end/assets/sounds/music/Quantum Circuitry 1.mp3" },
-                { name: "Quantum Circuitry 2", path: "./front-end/assets/sounds/music/Quantum Circuitry 2.mp3" },
-                { name: "Stellar Drift 1", path: "./front-end/assets/sounds/music/Stellar Drift 1.mp3" },
-                { name: "Stellar Drift 2", path: "./front-end/assets/sounds/music/Stellar Drift 2.mp3" }
-            ];
-
-            // Get background music element
-            const backgroundMusic = document.getElementById('background-music');
-            let currentTrackIndex = 0;
-            let isMuted = false;
-            let musicVolume = 0.5; // 50% default volume
-            let isPlaying = false;
-            let isAutoplay = false;
-            backgroundMusic.volume = musicVolume;
-
-            // Create music player UI
-            const musicPlayerUI = document.createElement('div');
-            musicPlayerUI.id = 'music-player';
-            musicPlayerUI.style.cssText = `
+            
+            // Create background music button
+            const musicButton = document.createElement('button');
+            musicButton.id = 'music-toggle';
+            musicButton.innerHTML = '🔊 Music';
+            musicButton.style.cssText = `
                 position: fixed;
                 top: 20px;
                 left: 20px;
-                background: rgba(0, 0, 0, 0.8);
-                padding: 15px;
+                background: rgba(65, 105, 225, 0.7);
+                color: white;
+                border: none;
+                padding: 8px 15px;
                 border-radius: 10px;
-                color: white;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                z-index: 10;
-                box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
-                min-width: 250px;
-                border: 1px solid #4169E1;
-                backdrop-filter: blur(5px);
-            `;
-
-            // Create toggle button
-            const toggleButton = document.createElement('button');
-            toggleButton.id = 'toggle-play';
-            toggleButton.innerHTML = '▶️ Play';
-            toggleButton.style.cssText = `
-                background: linear-gradient(to bottom, #4169E1, #1E3A8A);
-                border: none;
-                color: white;
-                padding: 8px;
-                border-radius: 5px;
                 cursor: pointer;
-                font-weight: bold;
-            `;
-
-            // Create track info display
-            const trackInfo = document.createElement('div');
-            trackInfo.id = 'track-info';
-            trackInfo.textContent = 'No track playing';
-            trackInfo.style.cssText = `
                 font-size: 14px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                text-align: center;
-                padding: 5px;
-                color: #4169E1;
+                z-index: 2;
+                transition: all 0.3s ease;
             `;
-
-            // Create track controls
-            const trackControls = document.createElement('div');
-            trackControls.style.cssText = `
-                display: flex;
-                justify-content: space-between;
-                gap: 5px;
-            `;
-
-            // Previous track button
-            const prevButton = document.createElement('button');
-            prevButton.innerHTML = '⏮️';
-            prevButton.style.cssText = `
-                background: linear-gradient(to bottom, #4169E1, #1E3A8A);
-                border: none;
-                color: white;
-                padding: 5px 10px;
-                border-radius: 5px;
-                cursor: pointer;
-                flex: 1;
-            `;
-
-            // Next track button
-            const nextButton = document.createElement('button');
-            nextButton.innerHTML = '⏭️';
-            nextButton.style.cssText = `
-                background: linear-gradient(to bottom, #4169E1, #1E3A8A);
-                border: none;
-                color: white;
-                padding: 5px 10px;
-                border-radius: 5px;
-                cursor: pointer;
-                flex: 1;
-            `;
-
-            // Random track button
-            const randomButton = document.createElement('button');
-            randomButton.innerHTML = '🔀';
-            randomButton.style.cssText = `
-                background: linear-gradient(to bottom, #4169E1, #1E3A8A);
-                border: none;
-                color: white;
-                padding: 5px 10px;
-                border-radius: 5px;
-                cursor: pointer;
-                flex: 1;
-            `;
-
-            // Volume controls
-            const volumeControls = document.createElement('div');
-            volumeControls.style.cssText = `
-                display: flex;
-                align-items: center;
-                gap: 5px;
-            `;
-
-            // Mute button
-            const muteButton = document.createElement('button');
-            muteButton.innerHTML = '🔊';
-            muteButton.style.cssText = `
-                background: none;
-                border: none;
-                color: white;
-                cursor: pointer;
-                font-size: 18px;
-            `;
-
-            // Volume slider
-            const volumeSlider = document.createElement('input');
-            volumeSlider.type = 'range';
-            volumeSlider.min = '0';
-            volumeSlider.max = '1';
-            volumeSlider.step = '0.1';
-            volumeSlider.value = musicVolume;
-            volumeSlider.style.cssText = `
-                flex: 1;
-            `;
-
-            // Track selection
-            const trackSelector = document.createElement('select');
-            trackSelector.id = 'track-selector';
-            trackSelector.style.cssText = `
-                background: #2a2a2a;
-                color: white;
-                border: 1px solid #4169E1;
-                padding: 5px;
-                border-radius: 5px;
-                width: 100%;
-            `;
-
-            // Autoplay checkbox
-            const autoplayContainer = document.createElement('div');
-            autoplayContainer.style.cssText = `
-                display: flex;
-                align-items: center;
-                gap: 5px;
-                margin-top: 5px;
-            `;
-
-            const autoplayCheck = document.createElement('input');
-            autoplayCheck.type = 'checkbox';
-            autoplayCheck.id = 'autoplay';
+            document.body.appendChild(musicButton);
             
-            const autoplayLabel = document.createElement('label');
-            autoplayLabel.htmlFor = 'autoplay';
-            autoplayLabel.textContent = 'Auto-play next track';
-            autoplayLabel.style.cssText = `
-                font-size: 12px;
-            `;
-
-            // Add all elements to the UI
-            volumeControls.appendChild(muteButton);
-            volumeControls.appendChild(volumeSlider);
-
-            trackControls.appendChild(prevButton);
-            trackControls.appendChild(randomButton);
-            trackControls.appendChild(nextButton);
-
-            autoplayContainer.appendChild(autoplayCheck);
-            autoplayContainer.appendChild(autoplayLabel);
-
-            musicPlayerUI.appendChild(trackInfo);
-            musicPlayerUI.appendChild(toggleButton);
-            musicPlayerUI.appendChild(trackControls);
-            musicPlayerUI.appendChild(volumeControls);
-            musicPlayerUI.appendChild(trackSelector);
-            musicPlayerUI.appendChild(autoplayContainer);
-
-            document.body.appendChild(musicPlayerUI);
-
-            // Function to populate track list
-            function populateTrackList() {
-                trackSelector.innerHTML = '';
-                musicTracks.forEach((track, index) => {
-                    const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = track.name;
-                    trackSelector.appendChild(option);
-                });
-                trackSelector.selectedIndex = currentTrackIndex;
-            }
-
-            // Function to load a track
-            function loadTrack(index = 0) {
-                if (index < 0) index = musicTracks.length - 1;
-                if (index >= musicTracks.length) index = 0;
-                
-                currentTrackIndex = index;
-                const track = musicTracks[currentTrackIndex];
-                
-                // Update UI
-                trackInfo.textContent = track.name;
-                trackSelector.selectedIndex = currentTrackIndex;
-                
-                // Load the track
-                backgroundMusic.src = track.path;
-                backgroundMusic.load();
-                
-                // If we were playing before, continue playing
-                if (isPlaying) {
-                    backgroundMusic.play().catch(err => {
-                        console.log('Failed to play track:', err);
-                        isPlaying = false;
-                        toggleButton.innerHTML = '▶️ Play';
-                    });
-                }
-            }
-
-            // Function to play/pause
-            function togglePlay() {
-                if (isPlaying) {
+            // Get background music element
+            const backgroundMusic = document.getElementById('background-music');
+            backgroundMusic.volume = 0.5; // Set volume to 50%
+            
+            // Toggle music on/off
+            let musicPlaying = false;
+            musicButton.addEventListener('click', () => {
+                if (musicPlaying) {
                     backgroundMusic.pause();
-                    toggleButton.innerHTML = '▶️ Play';
+                    musicButton.innerHTML = '🔇 Music';
+                    musicPlaying = false;
                 } else {
                     backgroundMusic.play().catch(err => {
-                        console.log('Failed to play track:', err);
+                        console.log('Failed to play background music:', err);
                     });
-                    toggleButton.innerHTML = '⏸️ Pause';
-                }
-                isPlaying = !isPlaying;
-            }
-
-            // Add event listeners
-            toggleButton.addEventListener('click', togglePlay);
-
-            prevButton.addEventListener('click', () => {
-                loadTrack(currentTrackIndex - 1);
-            });
-
-            nextButton.addEventListener('click', () => {
-                loadTrack(currentTrackIndex + 1);
-            });
-
-            randomButton.addEventListener('click', () => {
-                const randomIndex = Math.floor(Math.random() * musicTracks.length);
-                loadTrack(randomIndex);
-            });
-
-            muteButton.addEventListener('click', () => {
-                isMuted = !isMuted;
-                backgroundMusic.muted = isMuted;
-                muteButton.innerHTML = isMuted ? '🔇' : '🔊';
-            });
-
-            volumeSlider.addEventListener('input', (e) => {
-                musicVolume = parseFloat(e.target.value);
-                backgroundMusic.volume = musicVolume;
-            });
-
-            trackSelector.addEventListener('change', (e) => {
-                loadTrack(parseInt(e.target.value));
-            });
-
-            autoplayCheck.addEventListener('change', (e) => {
-                isAutoplay = e.target.checked;
-            });
-
-            // Handle track ended event for autoplay
-            backgroundMusic.addEventListener('ended', () => {
-                if (isAutoplay) {
-                    loadTrack(currentTrackIndex + 1);
-                    if (isPlaying) {
-                        backgroundMusic.play().catch(err => {
-                            console.log('Failed to autoplay next track:', err);
-                        });
-                    }
-                } else {
-                    isPlaying = false;
-                    toggleButton.innerHTML = '▶️ Play';
+                    musicButton.innerHTML = '🔊 Music';
+                    musicPlaying = true;
                 }
             });
-
-            // Style improvements
-            musicPlayerUI.addEventListener('mouseenter', () => {
-                musicPlayerUI.style.boxShadow = '0 0 15px rgba(0, 0, 255, 0.7)';
-            });
-
-            musicPlayerUI.addEventListener('mouseleave', () => {
-                musicPlayerUI.style.boxShadow = '0 0 10px rgba(0, 0, 255, 0.5)';
-            });
-
+            
             // Helper function to play a sound effect
             window.playSound = function(character, type) {
                 const soundId = `${character}-${type}`;
                 const sound = document.getElementById(soundId);
-
+                
                 if (sound) {
                     // Reset sound position and play
                     sound.currentTime = 0;
                     sound.volume = 0.7; // 70% volume for sound effects
-
+                    
                     // This approach helps with browser playback policies
                     sound.muted = false;
                     const playPromise = sound.play();
-
+                    
                     if (playPromise !== undefined) {
                         playPromise.catch(err => {
                             console.error(`Error playing sound ${soundId}:`, err);
@@ -708,12 +402,12 @@
                     console.error(`Sound not found: ${soundId}`);
                 }
             };
-
+            
             // Fix for audio elements to ensure they're ready to play
             document.querySelectorAll('audio').forEach(audio => {
                 audio.load();
             });
-
+            
             // Enable sound debug mode
             window.debugSounds = function() {
                 document.querySelectorAll('audio').forEach(audio => {
@@ -724,7 +418,7 @@
                     console.log(`  - error: ${audio.error}`);
                 });
             };
-
+            
             // Test sound function
             window.testSound = function(character, type) {
                 const soundId = `${character}-${type}`;
@@ -732,39 +426,34 @@
                 window.playSound(character, type);
             };
             
-            // Initialize music player
-            loadTrack();
-            populateTrackList();
-            
-            // Log available tracks and effects
-            console.log('Available music tracks:', musicTracks.map(t => t.name));
+            // Log all available sound effects for debugging
             console.log('Available sound effects:', Object.keys(soundMap));
             console.log('Try window.testSound("tibetanMastiff", "attack") to test sound');
         }
-
+        
         // Set initial random background
         document.addEventListener('DOMContentLoaded', () => {
             setRandomBackground();
             initAudio();
         });
-
+        
         // Allow user to change background on click
         document.getElementById('change-bg-button').addEventListener('click', setRandomBackground);
-
+        
         // Clean implementation of the game
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Clean game initializing...');
-
+            
             // Initialize variables
             let currentCharacter = "tibetanMastiff";
             let score = 0;
             let playerCoins = parseInt(localStorage.getItem('playerCoins')) || 0;
             let isGameOver = false;
             const loadingElement = document.getElementById('loading');
-
+            
             // Update coin display
             document.getElementById('coin-count').textContent = playerCoins;
-
+            
             // Web3 connection
             document.getElementById('connect-wallet').addEventListener('click', () => {
                 if (typeof window.ethereum !== 'undefined') {
@@ -784,35 +473,35 @@
                     window.open('https://metamask.io/download.html', '_blank');
                 }
             });
-
+            
             // Three.js setup
             const canvas = document.getElementById('gameCanvas');
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setClearColor(0x000000, 0); // Transparent background
-
+            
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 5;
-
+            
             // Add lights
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
             scene.add(ambientLight);
-
+            
             const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
             directionalLight.position.set(0, 1, 1);
             scene.add(directionalLight);
-
+            
             // Character models
             const models = {};
             const loader = new THREE.GLTFLoader();
-
+            
             // Tracking original scales for models
             const originalScales = {};
             // Track if an attack is in progress
             let attackInProgress = false;
             let specialAttackInProgress = false;
-
+            
             function loadModel(name, path) {
                 // Try different path formats
                 const tryPaths = [
@@ -822,10 +511,10 @@
                     `/assets/models/${path}`,
                     `https://charlo21.github.io/Galaxia/assets/models/${path}`
                 ];
-
+                
                 console.log(`Attempting to load model: ${name}`);
                 loadingElement.textContent = `Loading ${name}...`;
-
+                
                 // Try each path
                 function tryNextPath(index) {
                     if (index >= tryPaths.length) {
@@ -833,23 +522,23 @@
                         loadingElement.textContent = `Error loading ${name}. Please refresh.`;
                         return;
                     }
-
+                    
                     const currentPath = tryPaths[index];
                     console.log(`Trying path: ${currentPath}`);
-
+                    
                     loader.load(
                         currentPath,
                         (gltf) => {
                             models[name] = gltf.scene;
                             console.log(`Successfully loaded model: ${name}`);
                             scene.add(gltf.scene);
-
+                            
                             // Store original scale
                             originalScales[name] = gltf.scene.scale.clone();
-
+                            
                             // Initially hide all models
                             gltf.scene.visible = false;
-
+                            
                             // If all models are loaded, hide loading and show initial character
                             if (Object.keys(models).length === 3) {
                                 loadingElement.style.display = 'none';
@@ -865,15 +554,15 @@
                         }
                     );
                 }
-
+                
                 tryNextPath(0);
             }
-
+            
             // Load all models
             loadModel('tibetanMastiff', 'tibetan_mastiff.glb');
             loadModel('sumatranTiger', 'sumatran_tiger.glb');
             loadModel('galaxyShip', 'spaceship.glb');
-
+            
             // Function to show a specific character
             function showCharacter(character) {
                 // Hide all models first
@@ -882,14 +571,14 @@
                         models[name].visible = false;
                     }
                 }
-
+                
                 // Show the selected character
                 if (models[character]) {
                     // Reset to original scale if it exists
                     if (originalScales[character]) {
                         models[character].scale.copy(originalScales[character]);
                     }
-
+                    
                     models[character].visible = true;
                     currentCharacter = character;
                     console.log(`Showing character: ${character}`);
@@ -897,50 +586,50 @@
                     console.warn(`Character model not loaded: ${character}`);
                 }
             }
-
+            
             // Button event listeners
             document.getElementById('mastiffButton').addEventListener('click', () => {
                 showCharacter('tibetanMastiff');
             });
-
+            
             document.getElementById('tigerButton').addEventListener('click', () => {
                 showCharacter('sumatranTiger');
             });
-
+            
             document.getElementById('shipButton').addEventListener('click', () => {
                 showCharacter('galaxyShip');
             });
-
+            
             // Add camera controls to rotate view with drag
             let isDragging = false;
             let previousMousePosition = { x: 0, y: 0 };
-
+            
             canvas.addEventListener('mousedown', (e) => {
                 isDragging = true;
                 previousMousePosition = { x: e.clientX, y: e.clientY };
             });
-
+            
             document.addEventListener('mouseup', () => {
                 isDragging = false;
             });
-
+            
             document.addEventListener('mousemove', (e) => {
                 if (isDragging) {
                     const deltaMove = {
                         x: e.clientX - previousMousePosition.x,
                         y: e.clientY - previousMousePosition.y
                     };
-
+                    
                     // Rotate the current model based on mouse movement
                     if (models[currentCharacter]) {
                         models[currentCharacter].rotation.y += deltaMove.x * 0.01;
                         models[currentCharacter].rotation.x += deltaMove.y * 0.01;
                     }
-
+                    
                     previousMousePosition = { x: e.clientX, y: e.clientY };
                 }
             });
-
+            
             // Function to simulate attack
             canvas.addEventListener('click', (e) => {
                 // Don't trigger attack if dragging
@@ -949,26 +638,26 @@
                         // Create a pulse effect
                         const model = models[currentCharacter];
                         const originalScale = originalScales[currentCharacter];
-
+                        
                         // Scale up quickly
                         model.scale.multiplyScalar(1.2);
-
+                        
                         // Then return to original scale
                         setTimeout(() => {
                             model.scale.copy(originalScale);
                             attackInProgress = false;
                         }, 150);
-
+                        
                         score += 10;
                         console.log(`Attack! Score: ${score}`);
-
+                        
                         // Play attack sound effect
                         window.playSound(currentCharacter, 'attack');
                         attackInProgress = true;
                     }
                 }
             });
-
+            
             // Function to simulate special attack
             canvas.addEventListener('dblclick', () => {
                 if (!specialAttackInProgress) {
@@ -977,17 +666,17 @@
                         const model = models[currentCharacter];
                         const originalScale = originalScales[currentCharacter];
                         const originalRotation = model.rotation.y;
-
+                        
                         // Pulse and spin
                         model.scale.multiplyScalar(1.5);
-
+                        
                         // Spin animation
                         let spins = 0;
                         const maxSpins = 2;
                         const spinInterval = setInterval(() => {
                             model.rotation.y += Math.PI / 8;
                             spins++;
-
+                            
                             if (spins >= maxSpins * 16) { // 16 steps for a full 2π rotation
                                 clearInterval(spinInterval);
                                 model.scale.copy(originalScale);
@@ -995,50 +684,50 @@
                                 specialAttackInProgress = false;
                             }
                         }, 20);
-
+                        
                         score += 30;
                         console.log(`Special Attack! Score: ${score}`);
-
+                        
                         // Play special attack sound effect
                         window.playSound(currentCharacter, 'special');
                         specialAttackInProgress = true;
                     }
                 }
             });
-
+            
             // Handle window resize
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
-
+            
             // Animation loop
             function animate() {
                 requestAnimationFrame(animate);
-
+                
                 // Gentle idle animation for models
                 for (const name in models) {
                     if (models[name] && models[name].visible) {
                         models[name].rotation.y += 0.005;
                     }
                 }
-
+                
                 renderer.render(scene, camera);
             }
-
+            
             animate();
-
+            
             // Daily reward check
             setTimeout(() => {
                 const lastLogin = localStorage.getItem('lastLogin');
                 const currentDate = new Date().getTime();
                 const timeLimit = 24 * 60 * 60 * 1000; // 24 hours
-
+                
                 if (!lastLogin || (currentDate - parseInt(lastLogin)) > timeLimit) {
                     // Give reward
                     const reward = { coins: 100, rarity: 'common' };
-
+                    
                     // Create reward message
                     const modal = document.createElement('div');
                     modal.style.cssText = `
@@ -1054,7 +743,7 @@
                         z-index: 1000;
                         border: 2px solid #4169E1;
                     `;
-
+                    
                     modal.innerHTML = `
                         <h2 style="color: #4169E1;">Daily Reward!</h2>
                         <p>${reward.rarity.toUpperCase()} Daily Reward: ${reward.coins} coins!</p>
@@ -1067,14 +756,14 @@
                             cursor: pointer;
                         ">Claim</button>
                     `;
-
+                    
                     document.body.appendChild(modal);
-
+                    
                     // Update coins
                     playerCoins += reward.coins;
                     localStorage.setItem('playerCoins', playerCoins.toString());
                     document.getElementById('coin-count').textContent = playerCoins;
-
+                    
                     // Update last login
                     localStorage.setItem('lastLogin', currentDate.toString());
                 }

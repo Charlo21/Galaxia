@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxia Complete Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            z-index: 2;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .character-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: linear-gradient(to bottom, #4a4a4a, #2a2a2a);
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .character-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+
+        #mastiffButton { background: linear-gradient(to bottom, #8B4513, #654321); }
+        #tigerButton { background: linear-gradient(to bottom, #FF4500, #B22222); }
+        #shipButton { background: linear-gradient(to bottom, #4169E1, #000080); }
+
+        #ui-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 15px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        #audio-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 15px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            border: 3px solid rgba(74, 74, 247, 0.6);
+            box-shadow: 0 0 20px rgba(74, 74, 247, 0.3);
+            backdrop-filter: blur(5px);
+            pointer-events: all;
+            width: 250px;
+        }
+
+        #music-info {
+            font-size: 14px;
+            color: #4169E1;
+            text-align: center;
+            margin: 5px 0;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .control-button {
+            background: linear-gradient(to bottom, #4a4af7, #2a2a8a);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .control-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(74, 74, 247, 0.5);
+        }
+
+        .volume-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+            width: 100%;
+        }
+
+        #volume-slider {
+            width: 150px;
+            cursor: pointer;
+        }
+
+        #mute-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+        }
+
+        #instructions {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            z-index: 3;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border-radius: 10px;
+        }
+        
+        #debug-panel {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 2000;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            color: lime;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="controls">
+            <button id="mastiffButton" class="character-btn">Tibetan Mastiff</button>
+            <button id="tigerButton" class="character-btn">Sumatran Tiger</button>
+            <button id="shipButton" class="character-btn">Galaxy Ship</button>
+        </div>
+        <div id="ui-container">
+            <div>Score: <span id="score-display">0</span></div>
+            <button id="change-background" class="control-button">Change Background</button>
+        </div>
+        <div id="audio-controls">
+            <div id="music-info">Loading music...</div>
+            <button id="change-music" class="control-button">Change Music</button>
+            <div class="volume-controls">
+                <button id="mute-button">🔊</button>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+            </div>
+        </div>
+        <div id="instructions">
+            Click to Attack | Double Click for Special Attack | Drag to Rotate View
+        </div>
+        <div id="loading">Loading 3D Models...</div>
+        <div id="debug-panel">Loading...<br>Check this panel for debug info</div>
+    </div>
+
+    <script>
+        // Game implementation
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Game initializing...');
+            
+            // Debug logger
+            const debugPanel = document.getElementById('debug-panel');
+            function debug(message) {
+                console.log(message);
+                const timestamp = new Date().toLocaleTimeString();
+                debugPanel.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+                debugPanel.scrollTop = debugPanel.scrollHeight;
+                
+                // Keep only the last 20 messages
+                const messages = debugPanel.getElementsByTagName('div');
+                if (messages.length > 20) {
+                    for (let i = 0; i < messages.length - 20; i++) {
+                        debugPanel.removeChild(messages[i]);
+                    }
+                }
+            }
+            
+            debug('Starting initialization...');
+            debug(`Page loaded at: ${new Date().toLocaleString()}`);
+            
+            // Initialize variables
+            let currentCharacter = "tibetanMastiff";
+            let score = 0;
+            let isGameOver = false;
+            const loadingElement = document.getElementById('loading');
+            
+            // Update score display
+            function updateScore() {
+                document.getElementById('score-display').textContent = score;
+            }
+            updateScore();
+            
+            // Three.js setup
+            const canvas = document.getElementById('gameCanvas');
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000);
+            
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+            
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(0, 1, 1);
+            scene.add(directionalLight);
+            
+            // Set up background system with TV fantasy art
+            debug('Setting up background system');
+            const backgroundTexture = new THREE.TextureLoader();
+            let currentBackground = null;
+            const backgroundSphere = new THREE.Mesh(
+                new THREE.SphereGeometry(50, 60, 40), // Reduced from 500 to 50 to make backgrounds less zoomed in
+                new THREE.MeshBasicMaterial({ color: 0x000000 })
+            );
+            // Flip the geometry inside out
+            backgroundSphere.scale.x = -1;
+            scene.add(backgroundSphere);
+            
+            // List of background images - using GitHub Pages URLs
+            const backgroundImages = [
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Akira Toriyama Inspired Manga.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Alan Lee Inpspired Fantasy Piece 2.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Alan Lee Inspired Alien World.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Alicia Austin  Inspired Nebula.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Amano Inspired Alien World.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Boris Vallejo Inspired Fantasy Piece 2.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Christopher Norton Moore  Inspired Nebula.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/David Burroughs Mattingly  Inspired Nebula.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Donato Giancola  Inspired Nebula.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Donato Giancola Inspired Fantasy Piece 2.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Frank Frazetta Inspired Fantasy Piece 2.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Frank Kelly Freas Inspired Alien World.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Gerald Brom Inspired Alien World.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Gervasio Gallardo Inspired Fantasy Piece 2.jpg',
+                'https://charlo21.github.io/Galaxia/front-end/assets/Images/backgrounds/Gustavo Cabral Inspired Fantasy Piece 2.jpg'
+            ];
+            
+            // Function to load a random background
+            function loadRandomBackground() {
+                const randomIndex = Math.floor(Math.random() * backgroundImages.length);
+                const backgroundPath = backgroundImages[randomIndex];
+                debug(`Selected background: ${backgroundPath.split('/').pop()}`);
+                loadBackground(backgroundPath);
+            }
+            
+            // Function to load a specific background
+            function loadBackground(imagePath) {
+                debug(`Loading background: ${imagePath}`);
+                backgroundTexture.load(
+                    imagePath,
+                    (texture) => {
+                        backgroundSphere.material.dispose();
+                        backgroundSphere.material = new THREE.MeshBasicMaterial({
+                            map: texture,
+                            side: THREE.BackSide  // Ensure the texture is visible from inside
+                        });
+                        currentBackground = imagePath;
+                        debug(`Background loaded: ${imagePath.split('/').pop()}`);
+                    },
+                    (progress) => {
+                        if (progress.lengthComputable) {
+                            const percentComplete = Math.round((progress.loaded / progress.total) * 100);
+                            debug(`Background loading: ${percentComplete}%`);
+                        }
+                    },
+                    (error) => {
+                        debug(`Error loading background: ${imagePath}`);
+                        debug(error.message);
+                        
+                        // Try with a different path format
+                        const alternatePath = imagePath.replace('front-end/', '');
+                        debug(`Trying alternate path: ${alternatePath}`);
+                        backgroundTexture.load(
+                            alternatePath,
+                            (texture) => {
+                                backgroundSphere.material.dispose();
+                                backgroundSphere.material = new THREE.MeshBasicMaterial({
+                                    map: texture,
+                                    side: THREE.BackSide
+                                });
+                                currentBackground = alternatePath;
+                                debug(`Background loaded: ${alternatePath.split('/').pop()}`);
+                            },
+                            null,
+                            (secondError) => {
+                                debug(`Error loading background with alternate path: ${alternatePath}`);
+                                debug(secondError.message);
+                            }
+                        );
+                    }
+                );
+            }
+            
+            // Add click handler for background change button
+            document.getElementById('change-background').addEventListener('click', () => {
+                debug('Background change requested');
+                loadRandomBackground();
+            });
+            
+            // Set up music system
+            debug('Setting up music system');
+            let audioPlayer = new Audio();
+            audioPlayer.volume = 0.5;
+            audioPlayer.loop = false;
+            let currentTrack = '';
+            let isMuted = false;
+            
+            // Create preloaded audio elements for each sound effect
+            debug('Preloading sound effects');
+            
+            // Use Raw GitHub URLs for direct access to sound files
+            const soundPaths = {
+                dog_attack: [
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_attack.mp3.wav'
+                ],
+                cat_sword: [
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_sword attack.mp3.wav'
+                ],
+                cat_phaser: [
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_phaser attack.mp3.wav'
+                ],
+                ship_cannon: [
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_phase cannon.mp3.wav'
+                ],
+                ship_torpedo: [
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_photon torpedo.mp3.wav'
+                ]
+            };
+            
+            // Create direct audio elements using raw GitHub URLs
+            const createSoundElement = function(id) {
+                debug(`Creating sound element for: ${id}`);
+                // Create a simple Audio object with the direct URL
+                const audioElement = new Audio(soundPaths[id][0]);
+                audioElement.id = id;
+                audioElement.preload = 'auto';
+                
+                // Log successful loading
+                audioElement.addEventListener('canplaythrough', function() {
+                    debug(`✅ Sound loaded successfully: ${id}`);
+                });
+                
+                // Handle errors
+                audioElement.addEventListener('error', function(e) {
+                    debug(`❌ Error loading sound: ${id} - Error code: ${e.target.error ? e.target.error.code : 'unknown'}`);
+                    debug(`Failed URL: ${soundPaths[id][0]}`);
+                });
+                
+                return audioElement;
+            };
+            
+            // Create all the audio elements
+            const soundEffects = {
+                tibetanMastiff: {
+                    attack: createSoundElement('dog_attack'),
+                    specialAttack: createSoundElement('dog_attack')
+                },
+                sumatranTiger: {
+                    attack: createSoundElement('cat_sword'),
+                    specialAttack: createSoundElement('cat_phaser')
+                },
+                galaxyShip: {
+                    attack: createSoundElement('ship_cannon'),
+                    specialAttack: createSoundElement('ship_torpedo')
+                }
+            };
+            
+            // Set volume for all sound effects
+            function setSoundEffectsVolume(volume) {
+                for (const character in soundEffects) {
+                    soundEffects[character].attack.volume = volume;
+                    soundEffects[character].specialAttack.volume = volume;
+                }
+            }
+            
+            // Initialize sound effects volume
+            setSoundEffectsVolume(0.5);
+            
+            // List of music tracks with GitHub Pages URLs
+            const musicTracks = [
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Cosmic Pulse.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Galaxia Combat 01.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/High-Energy Techno & Industrial 2.1.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/High-Energy Techno & Industrial 2.2.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 1.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.1.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/High-Energy Techno & Industrial-Inspired 3.2.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Industrial Orbit.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Nebula Core 1.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Nebula Core 2.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Quantum Circuitry 1.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Quantum Circuitry 2.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Stellar Drift 1.mp3',
+                'https://charlo21.github.io/Galaxia/front-end/assets/sounds/music/Stellar Drift 2.mp3'
+            ];
+            
+            // Track the last played index to avoid repeats
+            let lastPlayedIndex = parseInt(localStorage.getItem('galaxiaLastTrack') || '-1');
+            debug(`Last played track index: ${lastPlayedIndex}`);
+            
+            // Function to play a random track
+            function playRandomTrack() {
+                // Get a random index different from the last one
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * musicTracks.length);
+                } while (randomIndex === lastPlayedIndex && musicTracks.length > 1);
+                
+                // Update the last played index and store it
+                lastPlayedIndex = randomIndex;
+                localStorage.setItem('galaxiaLastTrack', randomIndex.toString());
+                
+                const trackPath = musicTracks[randomIndex];
+                debug(`Selected track: ${trackPath.split('/').pop()}`);
+                playTrack(trackPath);
+            }
+            
+            // Function to play a specific track
+            function playTrack(trackPath) {
+                debug(`Attempting to play track: ${trackPath}`);
+                const musicInfo = document.getElementById('music-info');
+                musicInfo.textContent = 'Loading track...'; 
+                
+                // Save current volume
+                const currentVolume = audioPlayer.volume;
+                
+                // Stop current track
+                audioPlayer.pause();
+                
+                // Try to load with the provided path
+                try {
+                    audioPlayer = new Audio(trackPath);
+                    audioPlayer.volume = currentVolume;
+                    
+                    audioPlayer.addEventListener('canplaythrough', () => {
+                        audioPlayer.play()
+                            .then(() => {
+                                // Display track name (remove path and extension)
+                                const trackName = trackPath.split('/').pop().replace('.mp3', '');
+                                musicInfo.textContent = trackName;
+                                debug(`Now playing: ${trackName}`);
+                                currentTrack = trackPath;
+                            })
+                            .catch(error => {
+                                debug(`Error during play(): ${error.message}`);
+                            });
+                    });
+                    
+                    // Handle errors
+                    audioPlayer.addEventListener('error', () => {
+                        debug(`Error loading track: ${trackPath}`);
+                        // Try with alternate path
+                        const alternatePath = trackPath.replace('front-end/', '');
+                        debug(`Trying alternate path: ${alternatePath}`);
+                        
+                        const altPlayer = new Audio(alternatePath);
+                        altPlayer.volume = currentVolume;
+                        
+                        altPlayer.addEventListener('canplaythrough', () => {
+                            altPlayer.play()
+                                .then(() => {
+                                    const trackName = alternatePath.split('/').pop().replace('.mp3', '');
+                                    musicInfo.textContent = trackName;
+                                    debug(`Now playing (alt): ${trackName}`);
+                                    audioPlayer = altPlayer;
+                                    currentTrack = alternatePath;
+                                })
+                                .catch(altError => {
+                                    debug(`Error playing alt track: ${altError.message}`);
+                                    musicInfo.textContent = 'Error playing music';
+                                });
+                        });
+                        
+                        altPlayer.addEventListener('error', () => {
+                            debug(`Error with alternate path too`);
+                            musicInfo.textContent = 'Error loading track';
+                            
+                            // Try another track as a last resort
+                            setTimeout(playRandomTrack, 2000);
+                        });
+                        
+                        // When track ends, play next random track
+                        altPlayer.addEventListener('ended', playRandomTrack);
+                    });
+                    
+                    // When track ends, play next random track
+                    audioPlayer.addEventListener('ended', () => {
+                        debug('Track ended, playing next random track');
+                        playRandomTrack();
+                    });
+                } catch (error) {
+                    debug(`Error creating audio player: ${error.message}`);
+                    musicInfo.textContent = 'Error playing music';
+                    setTimeout(playRandomTrack, 2000);
+                }
+            }
+            
+            // Set up volume and mute controls
+            document.getElementById('volume-slider').addEventListener('input', (e) => {
+                const volume = e.target.value;
+                audioPlayer.volume = volume;
+                setSoundEffectsVolume(volume); // Also update sound effects volume
+                debug(`Volume changed to: ${volume}`);
+                
+                // Update mute button based on volume
+                if (parseFloat(volume) === 0) {
+                    document.getElementById('mute-button').textContent = '🔇';
+                    isMuted = true;
+                } else {
+                    document.getElementById('mute-button').textContent = '🔊';
+                    isMuted = false;
+                }
+            });
+            
+            document.getElementById('mute-button').addEventListener('click', () => {
+                const volumeSlider = document.getElementById('volume-slider');
+                if (isMuted) {
+                    // Unmute
+                    audioPlayer.volume = volumeSlider.value;
+                    setSoundEffectsVolume(volumeSlider.value); // Also unmute sound effects
+                    document.getElementById('mute-button').textContent = '🔊';
+                    isMuted = false;
+                    debug('Audio unmuted');
+                } else {
+                    // Mute
+                    audioPlayer.volume = 0;
+                    setSoundEffectsVolume(0); // Also mute sound effects
+                    document.getElementById('mute-button').textContent = '🔇';
+                    isMuted = true;
+                    debug('Audio muted');
+                }
+            });
+            
+            // Add event listener for changing the music track
+            document.getElementById('change-music').addEventListener('click', () => {
+                debug('Music change requested');
+                playRandomTrack();
+            });
+            
+            // Character models - using actual models from GitHub
+            const models = {};
+            const loader = new THREE.GLTFLoader();
+            
+            // Load the actual models from GitHub Pages
+            function loadModels() {
+                debug('Loading 3D models from GitHub');
+                
+                // Try different base URLs for models (with and without front-end prefix)
+                const baseUrls = [
+                    'https://charlo21.github.io/Galaxia/assets/models/',
+                    'https://charlo21.github.io/Galaxia/front-end/assets/models/',
+                    'https://charlo21.github.io/Galaxia/models/',
+                ];
+                
+                // Function to try loading model from different paths
+                function tryLoadModel(modelName, filename, color, index = 0) {
+                    if (index >= baseUrls.length) {
+                        // All URLs failed, create placeholder
+                        debug(`Failed to load ${modelName} from all paths, using placeholder`);
+                        models[modelName] = createPlaceholderModel(color);
+                        models[modelName].visible = false;
+                        scene.add(models[modelName]);
+                        checkAllModelsLoaded();
+                        return;
+                    }
+                    
+                    const url = `${baseUrls[index]}${filename}`;
+                    debug(`Trying to load ${modelName} from: ${url}`);
+                    
+                    loader.load(
+                        url,
+                        (gltf) => {
+                            models[modelName] = gltf.scene;
+                            models[modelName].visible = false;
+                            scene.add(models[modelName]);
+                            debug(`Successfully loaded ${modelName} model`);
+                            checkAllModelsLoaded();
+                        },
+                        (progress) => {
+                            if (progress.lengthComputable) {
+                                const percent = Math.round((progress.loaded / progress.total) * 100);
+                                debug(`${modelName}: ${percent}% loaded`);
+                            }
+                        },
+                        (error) => {
+                            debug(`Error loading ${modelName} from ${url}: ${error.message}`);
+                            // Try next URL
+                            tryLoadModel(modelName, filename, color, index + 1);
+                        }
+                    );
+                }
+                
+                // Load Tibetan Mastiff
+                tryLoadModel('tibetanMastiff', 'tibetan_mastiff.glb', 0x8B4513);
+                
+                // Load Sumatran Tiger
+                tryLoadModel('sumatranTiger', 'sumatran_tiger.glb', 0xFF4500);
+                
+                // Load Galaxy Ship
+                tryLoadModel('galaxyShip', 'spaceship.glb', 0x4169E1);
+            }
+            
+            // Check if all models have been loaded
+            let modelsLoaded = 0;
+            function checkAllModelsLoaded() {
+                modelsLoaded++;
+                if (modelsLoaded >= 3) {
+                    loadingElement.style.display = 'none';
+                    debug('All models loaded successfully');
+                    showCharacter(currentCharacter);
+                }
+            }
+            
+            // Fallback - Create a placeholder model for demonstration
+            function createPlaceholderModel(color) {
+                debug(`Creating placeholder model with color ${color}`);
+                const geometry = new THREE.BoxGeometry(1, 1, 1);
+                const material = new THREE.MeshPhongMaterial({ color: color });
+                const model = new THREE.Mesh(geometry, material);
+                return model;
+            }
+            
+            // Function to show a specific character
+            function showCharacter(character) {
+                // Hide all models first
+                for (const name in models) {
+                    if (models[name]) {
+                        models[name].visible = false;
+                    }
+                }
+                
+                // Show the selected character
+                if (models[character]) {
+                    models[character].visible = true;
+                    currentCharacter = character;
+                    debug(`Showing character: ${character}`);
+                } else {
+                    debug(`Character model not loaded: ${character}`);
+                }
+            }
+            
+            // Button event listeners
+            document.getElementById('mastiffButton').addEventListener('click', () => {
+                showCharacter('tibetanMastiff');
+            });
+            
+            document.getElementById('tigerButton').addEventListener('click', () => {
+                showCharacter('sumatranTiger');
+            });
+            
+            document.getElementById('shipButton').addEventListener('click', () => {
+                showCharacter('galaxyShip');
+            });
+            
+            // Function to play attack sound - using completely separate audio for each play
+            function playAttackSound(isSpecial = false) {
+                if (!soundEffects[currentCharacter]) {
+                    debug(`No sound effects found for ${currentCharacter}`);
+                    return;
+                }
+                
+                // Determine which sound to play
+                let soundId;
+                if (currentCharacter === 'tibetanMastiff') {
+                    soundId = 'dog_attack';
+                } else if (currentCharacter === 'sumatranTiger') {
+                    soundId = isSpecial ? 'cat_phaser' : 'cat_sword';
+                } else if (currentCharacter === 'galaxyShip') {
+                    soundId = isSpecial ? 'ship_torpedo' : 'ship_cannon';
+                }
+                
+                debug(`Attempting to play ${isSpecial ? 'special' : 'regular'} attack sound (${soundId}) for ${currentCharacter}`);
+                
+                // Create a fresh Audio instance each time to avoid issues with concurrent playback
+                const soundURL = soundPaths[soundId][0];
+                const sound = new Audio(soundURL);
+                
+                // Set volume based on current settings
+                sound.volume = isMuted ? 0 : document.getElementById('volume-slider').value;
+                
+                // Play and report success or failure
+                sound.play()
+                    .then(() => {
+                        debug(`✅ Successfully playing sound: ${soundId}`);
+                    })
+                    .catch(error => {
+                        debug(`❌ Error playing sound (${soundId}): ${error.message}`);
+                        debug(`Failed URL: ${soundURL}`);
+                    });
+            }
+            
+            // Function to simulate attack
+            canvas.addEventListener('click', () => {
+                if (models[currentCharacter]) {
+                    // Rotate the model slightly to show attack
+                    models[currentCharacter].rotation.y += 0.5;
+                    score += 10;
+                    updateScore();
+                    debug(`Attack! Score: ${score}`);
+                    
+                    // Play attack sound
+                    playAttackSound(false);
+                }
+            });
+            
+            // Function to simulate special attack
+            canvas.addEventListener('dblclick', () => {
+                if (models[currentCharacter]) {
+                    // Rotate the model more to show special attack
+                    models[currentCharacter].rotation.y += 1.5;
+                    score += 30;
+                    updateScore();
+                    debug(`Special Attack! Score: ${score}`);
+                    
+                    // Play special attack sound
+                    playAttackSound(true);
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Rotate models slightly for animation
+                for (const name in models) {
+                    if (models[name] && models[name].visible) {
+                        models[name].rotation.y += 0.01;
+                    }
+                }
+                
+                // Slow rotation of the background sphere for effect
+                if (backgroundSphere) {
+                    backgroundSphere.rotation.y += 0.0001;
+                }
+                
+                renderer.render(scene, camera);
+            }
+            
+            // Initialize everything
+            loadModels();
+            animate();
+            loadRandomBackground();
+            playRandomTrack();
+            
+            debug('Game fully initialized');
+        });
+    </script>
+</body>
+</html>

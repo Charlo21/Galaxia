@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Effects Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .sound-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #log {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sound Effects Test</h1>
+    
+    <div class="sound-group">
+        <h2>Dog Sounds</h2>
+        <button onclick="playSound('dog_attack.mp3')">Dog Attack</button>
+    </div>
+    
+    <div class="sound-group">
+        <h2>Cat Sounds</h2>
+        <button onclick="playSound('cat_sword attack.mp3')">Cat Sword Attack</button>
+        <button onclick="playSound('cat_phaser attack.mp3')">Cat Phaser Attack</button>
+    </div>
+    
+    <div class="sound-group">
+        <h2>Ship Sounds</h2>
+        <button onclick="playSound('ship_phase cannon.mp3')">Ship Phase Cannon</button>
+        <button onclick="playSound('ship_photon torpedo.mp3')">Ship Photon Torpedo</button>
+    </div>
+    
+    <div class="sound-group">
+        <h2>Test Different Paths</h2>
+        <button onclick="playSound('dog_attack.mp3.wav', 'front-end/assets/sounds/effects/')">Path: front-end/assets/sounds/effects/</button>
+        <button onclick="playSound('dog_attack.mp3', 'front-end/assets/sounds/effects/')">Path without .wav</button>
+        <button onclick="playSound('dog_attack.mp3.wav', 'assets/sounds/effects/')">Path: assets/sounds/effects/</button>
+        <button onclick="playSound('dog_attack.mp3', 'assets/sounds/effects/')">Path: assets/sounds/effects/ (without .wav)</button>
+        <button onclick="playSound('dog_attack.mp3.wav', 'https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/')">GitHub URL with .wav</button>
+        <button onclick="playSound('dog_attack.mp3', 'https://charlo21.github.io/Galaxia/front-end/assets/sounds/effects/')">GitHub URL without .wav</button>
+    </div>
+    
+    <div id="log">
+        <div>Log messages will appear here...</div>
+    </div>
+    
+    <script>
+        // Log function
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            logElement.appendChild(logEntry);
+            // Auto-scroll to bottom
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        // Play sound function with path option
+        function playSound(filename, basePath = 'front-end/assets/sounds/effects/') {
+            const fullPath = basePath + filename;
+            log(`Attempting to play: ${fullPath}`);
+            
+            const sound = new Audio(fullPath);
+            
+            sound.oncanplaythrough = () => {
+                log(`Sound loaded and ready to play: ${fullPath}`);
+            };
+            
+            sound.onplay = () => {
+                log(`▶️ Playing: ${fullPath}`);
+            };
+            
+            sound.onended = () => {
+                log(`✓ Finished playing: ${fullPath}`);
+            };
+            
+            sound.onerror = (e) => {
+                log(`❌ Error loading sound: ${fullPath}`);
+                log(`Error code: ${sound.error ? sound.error.code : 'unknown'}`);
+                
+                // Try alternative path if this is a local path
+                if (!basePath.startsWith('http')) {
+                    const githubPath = 'https://charlo21.github.io/Galaxia/' + basePath + filename;
+                    log(`Trying GitHub URL: ${githubPath}`);
+                    
+                    const githubSound = new Audio(githubPath);
+                    
+                    githubSound.onplay = () => {
+                        log(`▶️ Playing from GitHub: ${githubPath}`);
+                    };
+                    
+                    githubSound.onerror = () => {
+                        log(`❌ GitHub path also failed: ${githubPath}`);
+                    };
+                    
+                    githubSound.play().catch(err => {
+                        log(`⚠️ GitHub play failed: ${err.message}`);
+                    });
+                }
+            };
+            
+            // Try to play the sound
+            sound.play().catch(err => {
+                log(`⚠️ Play failed: ${err.message}`);
+            });
+        }
+        
+        // Log page load
+        window.onload = function() {
+            log('Page loaded. Click buttons to test sounds.');
+        };
+    </script>
+</body>
+</html>
