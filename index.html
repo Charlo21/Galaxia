@@ -10,7 +10,6 @@
     <style>
         body {
             margin: 0;
-            overflow: hidden;
             font-family: Arial, sans-serif;
             color: white;
             /* Background will be set via JavaScript */
@@ -239,29 +238,55 @@
         }
             /* Responsive design for mobile devices */
         @media screen and (max-width: 768px) {
+            body {
+                overflow-y: auto;
+                height: 100%;
+                min-height: 100vh;
+                position: relative;
+            }
+            
+            #gameContainer {
+                min-height: 100vh;
+                height: auto;
+                padding-bottom: 180px; /* Space for controls at bottom */
+            }
+            
+            #gameCanvas {
+                position: fixed; /* Keep the canvas fixed in view */
+            }
+            
             #music-player {
-                top: 20px;
+                position: fixed;
+                top: auto;
                 left: 50%;
+                bottom: 120px;
                 transform: translateX(-50%);
                 max-width: 85%;
                 min-width: 0;
+                z-index: 1001;
             }
             
             #wallet-container {
-                top: auto;
-                bottom: 100px;
+                top: 20px;
                 right: 20px;
+                bottom: auto;
                 scale: 0.9;
             }
             
             #controls {
                 flex-wrap: wrap;
                 justify-content: center;
+                position: fixed;
+                bottom: 20px;
+                width: 90%;
+                left: 50%;
+                transform: translateX(-50%);
             }
             
             .character-btn {
                 padding: 8px 16px;
                 font-size: 14px;
+                margin: 5px;
             }
             
             #track-info {
@@ -269,9 +294,23 @@
             }
             
             #instructions {
-                bottom: 170px;
+                bottom: 85px;
                 font-size: 14px;
                 padding: 8px 16px;
+                position: fixed;
+            }
+            
+            #background-info {
+                bottom: 10px;
+                left: 10px;
+                position: fixed;
+            }
+            
+            #change-bg-button {
+                bottom: 10px;
+                right: 10px;
+                left: auto;
+                position: fixed;
             }
         }
         
@@ -281,6 +320,7 @@
                 max-width: 90%;
                 padding: 10px;
                 gap: 8px;
+                bottom: 100px;
             }
             
             #trackControls {
@@ -290,7 +330,6 @@
             #wallet-container {
                 padding: 10px 15px;
                 gap: 8px;
-                bottom: 80px;
                 scale: 0.85;
             }
             
@@ -305,15 +344,24 @@
             
             #controls {
                 bottom: 10px;
+                padding: 10px;
             }
             
             #background-info {
                 font-size: 10px;
-                bottom: 10px;
+                bottom: 45px;
+                left: 10px;
             }
             
             #change-bg-button {
-                bottom: 40px;
+                bottom: 45px;
+                right: 10px;
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+            
+            #instructions {
+                bottom: 70px;
                 font-size: 12px;
                 padding: 6px 12px;
             }
@@ -491,7 +539,7 @@
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
-                z-index: 10;
+                z-index: 1001;
                 box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
                 min-width: 250px;
                 max-width: 90%;
