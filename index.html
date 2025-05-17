@@ -256,14 +256,14 @@
             }
             
             #music-player {
-                position: fixed;
-                top: auto;
-                left: 50%;
-                bottom: 120px;
-                transform: translateX(-50%);
-                max-width: 85%;
-                min-width: 0;
-                z-index: 1001;
+                position: fixed !important;
+                top: auto !important;
+                left: 50% !important;
+                bottom: 120px !important;
+                transform: translateX(-50%) !important;
+                max-width: 85% !important;
+                min-width: 0 !important;
+                z-index: 1001 !important;
             }
             
             #wallet-container {
@@ -450,6 +450,8 @@
 
         // Function to initialize audio
         function initAudio() {
+            // Check for mobile view
+            const isMobile = window.innerWidth <= 768;
             // Sound mapping with correct filenames
             const soundMap = {
                 'background-music': './assets/sounds/Galaxia Theme Music.mp3',
@@ -528,24 +530,49 @@
             // Create music player UI
             const musicPlayerUI = document.createElement('div');
             musicPlayerUI.id = 'music-player';
-            musicPlayerUI.style.cssText = `
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                background: rgba(0, 0, 0, 0.8);
-                padding: 15px;
-                border-radius: 10px;
-                color: white;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                z-index: 1001;
-                box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
-                min-width: 250px;
-                max-width: 90%;
-                border: 1px solid #4169E1;
-                backdrop-filter: blur(5px);
-            `;
+            
+            // Apply different styling based on mobile or desktop
+            if (isMobile) {
+                musicPlayerUI.style.cssText = `
+                    position: fixed;
+                    top: auto;
+                    bottom: 120px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0, 0, 0, 0.8);
+                    padding: 15px;
+                    border-radius: 10px;
+                    color: white;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    z-index: 1001;
+                    box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
+                    min-width: 0;
+                    max-width: 85%;
+                    border: 1px solid #4169E1;
+                    backdrop-filter: blur(5px);
+                `;
+            } else {
+                musicPlayerUI.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    left: 20px;
+                    background: rgba(0, 0, 0, 0.8);
+                    padding: 15px;
+                    border-radius: 10px;
+                    color: white;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    z-index: 1001;
+                    box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
+                    min-width: 250px;
+                    max-width: 90%;
+                    border: 1px solid #4169E1;
+                    backdrop-filter: blur(5px);
+                `;
+            }
 
             // Create toggle button
             const toggleButton = document.createElement('button');
