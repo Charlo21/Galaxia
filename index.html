@@ -446,21 +446,21 @@
         function initAudio() {
             // Check for mobile view
             const isMobile = window.innerWidth <= 768;
-            // Sound mapping with updated filenames
+            // Sound mapping with direct GitHub URLs for maximum compatibility
             const soundMap = {
                 'background-music': './assets/sounds/Galaxia Theme Music.mp3',
 
                 // Mastiff sounds
-                'tibetanMastiff-attack': './assets/sounds/effects/dog_attack.wav',
-                'tibetanMastiff-special': './assets/sounds/effects/dog_special attack.mp3.wav',
+                'tibetanMastiff-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/dog_attack.wav',
+                'tibetanMastiff-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/dog_special attack.mp3.wav',
 
                 // Tiger sounds
-                'sumatranTiger-attack': './assets/sounds/effects/cat_attack.mp3.wav',
-                'sumatranTiger-special': './assets/sounds/effects/cat_special attack.mp3.wav',
+                'sumatranTiger-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/cat_attack.mp3.wav',
+                'sumatranTiger-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/cat_special attack.mp3.wav',
 
                 // Ship sounds
-                'galaxyShip-attack': './assets/sounds/effects/ship_attack.mp3.wav',
-                'galaxyShip-special': './assets/sounds/effects/ship_special attack.mp3.wav'
+                'galaxyShip-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/ship_attack.mp3.wav',
+                'galaxyShip-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/ship_special attack.mp3.wav'
             };
 
             // Function to create and set up a sound
@@ -1151,7 +1151,7 @@
                         console.log(`Special Attack! Score: ${score}`);
 
                         // Play special attack sound effect
-                        window.playSound(currentCharacter, 'special attack');
+                        window.playSound(currentCharacter, 'special');
                         specialAttackInProgress = true;
                     }
                 }
