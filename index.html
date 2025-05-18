@@ -841,14 +841,14 @@
                 const soundId = `${character}-${type}`;
                 console.log(`Attempting to play sound: ${soundId}`);
                 
-                // Map of sound files in front-end directory
+                // Map of sound files using raw GitHub URLs (which worked in the past according to memory)
                 const soundMap = {
-                    'tibetanMastiff-attack': './front-end/assets/sounds/effects/dog_attack.wav',
-                    'tibetanMastiff-special': './front-end/assets/sounds/effects/dog_special attack.mp3.wav',
-                    'sumatranTiger-attack': './front-end/assets/sounds/effects/cat_attack.mp3.wav',
-                    'sumatranTiger-special': './front-end/assets/sounds/effects/cat_special attack.mp3.wav',
-                    'galaxyShip-attack': './front-end/assets/sounds/effects/ship_attack.mp3.wav',
-                    'galaxyShip-special': './front-end/assets/sounds/effects/ship_specail attack.mp3.wav'
+                    'tibetanMastiff-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_attack.wav',
+                    'tibetanMastiff-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_special attack.mp3.wav',
+                    'sumatranTiger-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_attack.mp3.wav',
+                    'sumatranTiger-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_special attack.mp3.wav',
+                    'galaxyShip-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_attack.mp3.wav',
+                    'galaxyShip-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_specail attack.mp3.wav'
                 };
                 
                 // Get the sound file path
