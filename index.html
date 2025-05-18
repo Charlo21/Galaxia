@@ -836,75 +836,47 @@
                 musicPlayerUI.style.boxShadow = '0 0 10px rgba(0, 0, 255, 0.5)';
             });
 
-            // Using proper sound formats from your files
+            // Simple sound system using local files with proper .wav extensions
             window.playSound = function(character, type) {
                 const soundId = `${character}-${type}`;
-                console.log(`Attempting to play sound: ${soundId}`);
+                console.log(`Playing sound: ${soundId}`);
                 
-                // Map of sound files fixing the .mp3.wav to .wav format issue
+                // Map of local sound files with clean .wav extensions
                 const soundMap = {
-                    // For Mastiff, use the WAV file directly (more compatible)
-                    'tibetanMastiff-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_attack.wav',
-                    'tibetanMastiff-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_special attack.mp3.wav',
+                    // Mastiff sounds
+                    'tibetanMastiff-attack': './front-end/assets/sounds/effects/dog_attack.wav',
+                    'tibetanMastiff-special': './front-end/assets/sounds/effects/dog_special attack.wav',
                     
-                    // For Tiger
-                    'sumatranTiger-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_attack.mp3.wav',
-                    'sumatranTiger-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_special attack.mp3.wav',
+                    // Tiger sounds
+                    'sumatranTiger-attack': './front-end/assets/sounds/effects/cat_attack.wav',
+                    'sumatranTiger-special': './front-end/assets/sounds/effects/cat_special attack.wav',
                     
-                    // For Ship
-                    'galaxyShip-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_attack.mp3.wav',
-                    'galaxyShip-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_specail attack.mp3.wav'
+                    // Ship sounds
+                    'galaxyShip-attack': './front-end/assets/sounds/effects/ship_attack.wav',
+                    'galaxyShip-special': './front-end/assets/sounds/effects/ship_special attack.wav'
                 };
                 
-                // Function to modify URLs to handle format issues
-                const getProperSoundUrl = (url) => {
-                    // If the URL ends with .mp3.wav, change it to .wav
-                    // This fixes the "no supported source" error
-                    if (url.endsWith('.mp3.wav')) {
-                        console.log(`Converting ${url} to proper .wav format`);
-                        return url.replace('.mp3.wav', '.wav');
-                    }
-                    return url;
-                };
+                // Get the sound file path
+                const soundPath = soundMap[soundId];
                 
-                // Get the sound file path and fix format if needed
-                const originalSoundPath = soundMap[soundId];
-                
-                if (originalSoundPath) {
-                    const soundPath = getProperSoundUrl(originalSoundPath);
-                    console.log(`Using sound URL: ${soundPath}`);
+                if (soundPath) {
+                    console.log(`Loading sound from: ${soundPath}`);
                     
                     // Create a new Audio instance for each sound
                     const sound = new Audio();
                     sound.volume = 0.5; // 50% volume as requested
                     sound.src = soundPath;
                     
-                    // Log success
+                    // Log success or errors
                     sound.addEventListener('canplaythrough', () => {
                         console.log(`Sound loaded successfully: ${soundId}`);
                     }, {once: true});
                     
-                    // Error handler with detailed logging
                     sound.addEventListener('error', (e) => {
                         console.error(`Error loading sound ${soundId}:`, e);
-                        console.log(`Sound that failed: ${soundPath}`);
-                        console.log('Trying alternative approach...');
-                        
-                        // Try the file with the opposite extension
-                        const altSound = new Audio();
-                        altSound.volume = 0.5;
-                        const altPath = soundPath.includes('.wav') ? 
-                            soundPath.replace('.wav', '.mp3') : 
-                            soundPath.replace('.mp3', '.wav');
-                        
-                        console.log(`Trying alternative format: ${altPath}`);
-                        altSound.src = altPath;
-                        altSound.play().catch(err => {
-                            console.error('Alternative format also failed:', err);
-                        });
                     }, {once: true});
                     
-                    // Try to play the sound
+                    // Play the sound
                     sound.play().catch(err => {
                         console.error(`Error playing sound ${soundId}:`, err);
                     });
