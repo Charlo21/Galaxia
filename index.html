@@ -897,11 +897,85 @@
                 });
             };
 
-            // Test sound function
+            // Test sound function with extensive debugging
             window.testSound = function(character, type) {
                 const soundId = `${character}-${type}`;
                 console.log(`Testing sound: ${soundId}`);
                 window.playSound(character, type);
+            };
+            
+            // Direct sound test function for debugging
+            window.directSoundTest = function() {
+                console.log('Running direct sound test...');
+                
+                // Test URLs to try
+                const testUrls = [
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/dog_attack.wav',
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/cat_attack.mp3.wav',
+                    'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/ship_attack.mp3.wav',
+                    // Local paths to try
+                    './assets/sounds/effects/dog_attack.wav',
+                    './assets/sounds/effects/cat_attack.mp3.wav'
+                ];
+                
+                // Try each URL
+                testUrls.forEach((url, index) => {
+                    console.log(`Testing URL ${index+1}: ${url}`);
+                    try {
+                        const audio = new Audio(url);
+                        
+                        audio.addEventListener('canplaythrough', () => {
+                            console.log(`SUCCESS: Sound loaded for ${url}`);
+                            // Auto-play the sound
+                            audio.volume = 0.5;
+                            audio.play()
+                                .then(() => console.log(`Sound playing: ${url}`))
+                                .catch(err => console.error(`Error playing sound: ${err}`));
+                        }, {once: true});
+                        
+                        audio.addEventListener('error', (e) => {
+                            console.error(`FAILED: Error loading sound from ${url}:`, e);
+                        }, {once: true});
+                        
+                        // Set a timeout to detect if the sound hasn't loaded
+                        setTimeout(() => {
+                            if (audio.readyState < 4) { // HAVE_ENOUGH_DATA
+                                console.warn(`Sound not loaded after 5s: ${url}, readyState: ${audio.readyState}`);
+                            }
+                        }, 5000);
+                        
+                    } catch (err) {
+                        console.error(`Exception when creating Audio object for ${url}:`, err);
+                    }
+                });
+                
+                console.log('Test complete. Check console for results.');
+                return 'Test running, check console for results...';
+            };
+            
+            // Add a browser utility to enable sound from any URL
+            window.playAnySound = function(url, volume = 0.5) {
+                try {
+                    const audio = new Audio(url);
+                    audio.volume = volume;
+                    
+                    console.log(`Attempting to play: ${url}`);
+                    
+                    // Auto-play when ready
+                    audio.addEventListener('canplaythrough', () => {
+                        console.log(`Playing sound: ${url}`);
+                        audio.play().catch(e => console.error('Play failed:', e));
+                    }, {once: true});
+                    
+                    audio.addEventListener('error', (e) => {
+                        console.error(`Failed to load sound: ${url}`, e);
+                    }, {once: true});
+                    
+                } catch (e) {
+                    console.error('Error creating audio object:', e);
+                }
+                
+                return 'Attempting to play sound...';
             };
             
             // Initialize music player
