@@ -836,105 +836,48 @@
                 musicPlayerUI.style.boxShadow = '0 0 10px rgba(0, 0, 255, 0.5)';
             });
 
-            // Completely revised sound effect system using inline base64 encoded sounds
-            // This should bypass all file loading issues
+            // Clean sound effect implementation using files from front-end directory
             window.playSound = function(character, type) {
-                console.log(`Attempting to play sound: ${character}-${type}`);
+                const soundId = `${character}-${type}`;
+                console.log(`Attempting to play sound: ${soundId}`);
                 
-                // Instead of loading from URLs, we'll use these built-in sound effects
-                // Simple beep sound patterns for different actions and characters
-                const playBeepSound = function(pattern, volume = 0.5) {
-                    try {
-                        // Create audio context
-                        const AudioContext = window.AudioContext || window.webkitAudioContext;
-                        const audioCtx = new AudioContext();
-                        
-                        // Create oscillator
-                        const oscillator = audioCtx.createOscillator();
-                        const gainNode = audioCtx.createGain();
-                        
-                        // Set oscillator type and frequency based on pattern
-                        oscillator.type = pattern.type || 'sine';
-                        oscillator.frequency.setValueAtTime(pattern.frequency || 440, audioCtx.currentTime);
-                        
-                        // Set volume
-                        gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
-                        
-                        // Connect nodes
-                        oscillator.connect(gainNode);
-                        gainNode.connect(audioCtx.destination);
-                        
-                        // Start and stop the sound
-                        oscillator.start();
-                        oscillator.stop(audioCtx.currentTime + (pattern.duration || 0.1));
-                        
-                        console.log(`Playing generated sound for: ${character}-${type}`);
-                        return true;
-                    } catch (err) {
-                        console.error('Error playing generated sound:', err);
-                        return false;
-                    }
+                // Map of sound files in front-end directory
+                const soundMap = {
+                    'tibetanMastiff-attack': './front-end/assets/sounds/effects/dog_attack.wav',
+                    'tibetanMastiff-special': './front-end/assets/sounds/effects/dog_special attack.mp3.wav',
+                    'sumatranTiger-attack': './front-end/assets/sounds/effects/cat_attack.mp3.wav',
+                    'sumatranTiger-special': './front-end/assets/sounds/effects/cat_special attack.mp3.wav',
+                    'galaxyShip-attack': './front-end/assets/sounds/effects/ship_attack.mp3.wav',
+                    'galaxyShip-special': './front-end/assets/sounds/effects/ship_specail attack.mp3.wav'
                 };
                 
-                // Different sound patterns based on character and action
-                if (character === 'tibetanMastiff') {
-                    if (type === 'attack') {
-                        playBeepSound({ type: 'sawtooth', frequency: 150, duration: 0.15 });
-                    } else if (type === 'special') {
-                        // For special attack, play a double tone
-                        playBeepSound({ type: 'sawtooth', frequency: 150, duration: 0.1 });
-                        setTimeout(() => {
-                            playBeepSound({ type: 'sawtooth', frequency: 200, duration: 0.15 });
-                        }, 120);
+                // Get the sound file path
+                const soundPath = soundMap[soundId];
+                
+                if (soundPath) {
+                    // Create a new Audio instance for each sound (prevents caching issues)
+                    const sound = new Audio();
+                    sound.src = soundPath;
+                    sound.volume = 0.5; // 50% volume for better balance with music
+                    
+                    // Log success or error
+                    sound.addEventListener('canplaythrough', () => {
+                        console.log(`Sound loaded successfully: ${soundId}`);
+                    }, {once: true});
+                    
+                    sound.addEventListener('error', (e) => {
+                        console.error(`Error loading sound ${soundId}:`, e);
+                    }, {once: true});
+                    
+                    // Play the sound
+                    const playPromise = sound.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(err => {
+                            console.error(`Error playing sound ${soundId}:`, err);
+                        });
                     }
-                } else if (character === 'sumatranTiger') {
-                    if (type === 'attack') {
-                        playBeepSound({ type: 'square', frequency: 220, duration: 0.12 });
-                    } else if (type === 'special') {
-                        // For special attack, play a quick rising tone
-                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                        const oscillator = audioCtx.createOscillator();
-                        const gainNode = audioCtx.createGain();
-                        
-                        oscillator.type = 'square';
-                        oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
-                        oscillator.frequency.linearRampToValueAtTime(400, audioCtx.currentTime + 0.2);
-                        
-                        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                        
-                        oscillator.connect(gainNode);
-                        gainNode.connect(audioCtx.destination);
-                        
-                        oscillator.start();
-                        oscillator.stop(audioCtx.currentTime + 0.2);
-                    }
-                } else if (character === 'galaxyShip') {
-                    if (type === 'attack') {
-                        playBeepSound({ type: 'sine', frequency: 880, duration: 0.08 });
-                    } else if (type === 'special') {
-                        // For special attack, play a complex tone
-                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                        const oscillator1 = audioCtx.createOscillator();
-                        const oscillator2 = audioCtx.createOscillator();
-                        const gainNode = audioCtx.createGain();
-                        
-                        oscillator1.type = 'sine';
-                        oscillator1.frequency.setValueAtTime(880, audioCtx.currentTime);
-                        
-                        oscillator2.type = 'sine';
-                        oscillator2.frequency.setValueAtTime(1320, audioCtx.currentTime);
-                        
-                        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                        
-                        oscillator1.connect(gainNode);
-                        oscillator2.connect(gainNode);
-                        gainNode.connect(audioCtx.destination);
-                        
-                        oscillator1.start();
-                        oscillator2.start();
-                        oscillator1.stop(audioCtx.currentTime + 0.25);
-                        oscillator2.stop(audioCtx.currentTime + 0.25);
-                    }
+                } else {
+                    console.error(`Sound not defined for: ${soundId}`);
                 }
             };
 
