@@ -836,27 +836,48 @@
                 musicPlayerUI.style.boxShadow = '0 0 10px rgba(0, 0, 255, 0.5)';
             });
 
-            // Helper function to play a sound effect
+            // Helper function to play a sound effect using fresh Audio objects
+            // This approach worked previously according to saved memory
             window.playSound = function(character, type) {
+                // Define a mapping for sounds to their URLs
+                const soundUrlMap = {
+                    'tibetanMastiff-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/dog_attack.wav',
+                    'tibetanMastiff-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/dog_special attack.mp3.wav',
+                    'sumatranTiger-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/cat_attack.mp3.wav',
+                    'sumatranTiger-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/cat_special attack.mp3.wav',
+                    'galaxyShip-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/ship_attack.mp3.wav',
+                    'galaxyShip-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/assets/sounds/effects/ship_special attack.mp3.wav'
+                };
+                
                 const soundId = `${character}-${type}`;
-                const sound = document.getElementById(soundId);
-
-                if (sound) {
-                    // Reset sound position and play
-                    sound.currentTime = 0;
+                console.log(`Attempting to play sound: ${soundId}`);
+                
+                // Get the URL for this sound
+                const soundUrl = soundUrlMap[soundId];
+                
+                if (soundUrl) {
+                    // Create a new Audio instance each time (prevents caching issues)
+                    const sound = new Audio(soundUrl);
                     sound.volume = 0.5; // 50% volume for sound effects (reduced by ~30%)
-
-                    // This approach helps with browser playback policies
-                    sound.muted = false;
+                    
+                    // Add debugging
+                    sound.addEventListener('canplaythrough', () => {
+                        console.log(`Sound loaded successfully: ${soundId}`);
+                    });
+                    
+                    sound.addEventListener('error', (e) => {
+                        console.error(`Error loading sound ${soundId}:`, e);
+                    });
+                    
+                    // Play the sound
                     const playPromise = sound.play();
-
                     if (playPromise !== undefined) {
                         playPromise.catch(err => {
                             console.error(`Error playing sound ${soundId}:`, err);
                         });
                     }
                 } else {
-                    console.error(`Sound not found: ${soundId}`);
+                    console.error(`Sound URL not found for: ${soundId}`);
                 }
             };
 
