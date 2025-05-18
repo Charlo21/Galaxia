@@ -836,24 +836,25 @@
                 musicPlayerUI.style.boxShadow = '0 0 10px rgba(0, 0, 255, 0.5)';
             });
 
-            // Simple sound system using local files with proper .wav extensions
+            // Sound system using raw GitHub URLs which worked previously
             window.playSound = function(character, type) {
                 const soundId = `${character}-${type}`;
                 console.log(`Playing sound: ${soundId}`);
                 
-                // Map of local sound files with clean .wav extensions
+                // Map of sound files using raw GitHub URLs with correct extensions
+                // This approach worked previously according to stored memory
                 const soundMap = {
                     // Mastiff sounds
-                    'tibetanMastiff-attack': './front-end/assets/sounds/effects/dog_attack.wav',
-                    'tibetanMastiff-special': './front-end/assets/sounds/effects/dog_special attack.wav',
+                    'tibetanMastiff-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_attack.wav',
+                    'tibetanMastiff-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_special attack.wav',
                     
                     // Tiger sounds
-                    'sumatranTiger-attack': './front-end/assets/sounds/effects/cat_attack.wav',
-                    'sumatranTiger-special': './front-end/assets/sounds/effects/cat_special attack.wav',
+                    'sumatranTiger-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_attack.wav',
+                    'sumatranTiger-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_special attack.wav',
                     
                     // Ship sounds
-                    'galaxyShip-attack': './front-end/assets/sounds/effects/ship_attack.wav',
-                    'galaxyShip-special': './front-end/assets/sounds/effects/ship_special attack.wav'
+                    'galaxyShip-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_attack.wav',
+                    'galaxyShip-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_special attack.wav'
                 };
                 
                 // Get the sound file path
