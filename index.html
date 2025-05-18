@@ -836,53 +836,57 @@
                 musicPlayerUI.style.boxShadow = '0 0 10px rgba(0, 0, 255, 0.5)';
             });
 
-            // Sound system using raw GitHub URLs which worked previously
+            // Simple sound effect system using Web Audio API
+            // This approach doesn't rely on external files which have been causing issues
             window.playSound = function(character, type) {
                 const soundId = `${character}-${type}`;
-                console.log(`Playing sound: ${soundId}`);
+                console.log(`Playing sound effect for: ${soundId}`);
                 
-                // Map of sound files using raw GitHub URLs with correct extensions
-                // This approach worked previously according to stored memory
-                const soundMap = {
-                    // Mastiff sounds
-                    'tibetanMastiff-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_attack.wav',
-                    'tibetanMastiff-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_special attack.wav',
+                try {
+                    // Use Web Audio API to generate sounds
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     
-                    // Tiger sounds
-                    'sumatranTiger-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_attack.wav',
-                    'sumatranTiger-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_special attack.wav',
+                    // Create gain node for volume control
+                    const gainNode = audioContext.createGain();
+                    gainNode.gain.value = 0.5; // 50% volume as requested
+                    gainNode.connect(audioContext.destination);
                     
-                    // Ship sounds
-                    'galaxyShip-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_attack.wav',
-                    'galaxyShip-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_special attack.wav'
-                };
-                
-                // Get the sound file path
-                const soundPath = soundMap[soundId];
-                
-                if (soundPath) {
-                    console.log(`Loading sound from: ${soundPath}`);
+                    // Configure different sounds for different characters and actions
+                    if (character === 'tibetanMastiff') {
+                        // Dog sound - low pitch
+                        const oscillator = audioContext.createOscillator();
+                        oscillator.type = 'sawtooth';
+                        oscillator.frequency.value = type === 'attack' ? 100 : 80;
+                        oscillator.connect(gainNode);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                        console.log('Playing dog sound');
+                    } 
+                    else if (character === 'sumatranTiger') {
+                        // Tiger sound - medium pitch
+                        const oscillator = audioContext.createOscillator();
+                        oscillator.type = 'triangle';
+                        oscillator.frequency.value = type === 'attack' ? 200 : 180;
+                        oscillator.connect(gainNode);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.25);
+                        console.log('Playing tiger sound');
+                    } 
+                    else if (character === 'galaxyShip') {
+                        // Ship sound - high pitch
+                        const oscillator = audioContext.createOscillator();
+                        oscillator.type = 'sine';
+                        oscillator.frequency.value = type === 'attack' ? 600 : 400;
+                        oscillator.connect(gainNode);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.2);
+                        console.log('Playing ship sound');
+                    }
                     
-                    // Create a new Audio instance for each sound
-                    const sound = new Audio();
-                    sound.volume = 0.5; // 50% volume as requested
-                    sound.src = soundPath;
-                    
-                    // Log success or errors
-                    sound.addEventListener('canplaythrough', () => {
-                        console.log(`Sound loaded successfully: ${soundId}`);
-                    }, {once: true});
-                    
-                    sound.addEventListener('error', (e) => {
-                        console.error(`Error loading sound ${soundId}:`, e);
-                    }, {once: true});
-                    
-                    // Play the sound
-                    sound.play().catch(err => {
-                        console.error(`Error playing sound ${soundId}:`, err);
-                    });
-                } else {
-                    console.error(`Sound not defined for: ${soundId}`);
+                    return true; // Sound played successfully
+                } catch (err) {
+                    console.error('Error playing sound:', err);
+                    return false;
                 }
             };
 
