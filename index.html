@@ -509,12 +509,16 @@
                 { name: "Quantum Circuitry 1", path: "./front-end/assets/sounds/music/Quantum Circuitry 1.mp3" },
                 { name: "Quantum Circuitry 2", path: "./front-end/assets/sounds/music/Quantum Circuitry 2.mp3" },
                 { name: "Stellar Drift 1", path: "./front-end/assets/sounds/music/Stellar Drift 1.mp3" },
+                { name: "Cinematic _ Story _ World-Building Themes 9.2", path: "./front-end/assets/sounds/music/Cinematic _ Story _ World-Building Themes 9.2.mp3" },
                 { name: "Stellar Drift 2", path: "./front-end/assets/sounds/music/Stellar Drift 2.mp3" }
             ];
 
             // Get background music element
             const backgroundMusic = document.getElementById('background-music');
             let currentTrackIndex = 0;
+            
+            // Populate the track list in the UI
+            populateTrackList();
             let isMuted = false;
             let musicVolume = 0.5; // 50% default volume
             let isPlaying = false;
