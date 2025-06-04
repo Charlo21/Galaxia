@@ -465,25 +465,26 @@
 
             // Function to create and set up a sound
             function setupSound(id, src) {
+                console.log(`Setting up sound: ${id} with source: ${src}`);
                 const sound = document.getElementById(id);
-                if (!sound) return null;
+                if (!sound) {
+                    console.error(`Sound element not found: ${id}`);
+                    return null;
+                }
+
+                // Add event listeners for debugging
+                sound.addEventListener('canplaythrough', () => {
+                    console.log(`Sound loaded successfully: ${id}`);
+                });
+
+                sound.addEventListener('error', (e) => {
+                    console.error(`Error loading sound ${id}:`, e);
+                    console.error(`Source attempted: ${src}`);
+                });
 
                 // Set source
                 sound.src = src;
-
-                // Handle loading errors
-                sound.onerror = function() {
-                    console.error(`Error loading sound: ${src}`);
-                    // Try alternative extension
-                    const alt = src.replace('.mp3.wav', '.wav');
-                    console.log(`Trying alternative: ${alt}`);
-                    sound.src = alt;
-
-                    // Check for further errors
-                    sound.onerror = function() {
-                        console.error(`Failed to load sound with all extensions: ${src}`);
-                    };
-                };
+                sound.load(); // Explicitly load the audio
 
                 return sound;
             }
@@ -517,13 +518,25 @@
             const backgroundMusic = document.getElementById('background-music');
             let currentTrackIndex = 0;
             
-            // Populate the track list in the UI
-            populateTrackList();
+            // Initialize music player variables
             let isMuted = false;
             let musicVolume = 0.5; // 50% default volume
             let isPlaying = false;
             let isAutoplay = false;
+            
+            // Set initial volume
+            console.log('Initializing music player with volume:', musicVolume);
             backgroundMusic.volume = musicVolume;
+            
+            // Populate the track list in the UI
+            console.log('Populating track list...');
+            populateTrackList();
+            
+            // Start playing the first track
+            if (musicTracks.length > 0) {
+                console.log('Loading first track...');
+                loadTrack(0);
+            }
 
             // Create music player UI
             const musicPlayerUI = document.createElement('div');
@@ -743,18 +756,45 @@
 
             // Function to load a track
             function loadTrack(index = 0) {
+                console.log(`Loading track at index: ${index}`);
+                
                 if (index < 0) index = musicTracks.length - 1;
                 if (index >= musicTracks.length) index = 0;
                 
                 currentTrackIndex = index;
                 const track = musicTracks[currentTrackIndex];
                 
+                console.log(`Loading track: ${track.name} from ${track.path}`);
+                
                 // Update UI
                 trackInfo.textContent = track.name;
                 trackSelector.selectedIndex = currentTrackIndex;
                 
-                // Load the track
+                // Set the source and load the track
                 backgroundMusic.src = track.path;
+                
+                // Add event listeners for debugging
+                backgroundMusic.oncanplay = () => {
+                    console.log(`Track loaded successfully: ${track.name}`);
+                    if (isPlaying) {
+                        console.log('Playing track...');
+                        backgroundMusic.play().catch(e => {
+                            console.error('Error playing track:', e);
+                        });
+                    }
+                };
+                
+                backgroundMusic.onerror = (e) => {
+                    console.error(`Error loading track: ${track.name}`, e);
+                    console.error(`Path attempted: ${track.path}`);
+                    // Try the next track if available
+                    if (musicTracks.length > 1) {
+                        console.log('Trying next track...');
+                        loadTrack((currentTrackIndex + 1) % musicTracks.length);
+                    }
+                };
+                
+                // Load the track
                 backgroundMusic.load();
                 
                 // If we were playing before, continue playing
