@@ -7,6 +7,77 @@
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <!-- Global sound system -->
+    <script>
+    // Sound map for all game sounds
+    window.soundMap = {
+        // Mastiff sounds
+        'tibetanMastiff-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_attack.mp3.wav',
+        'tibetanMastiff-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/being attack_hit.mp3.wav',
+        
+        // Tiger sounds
+        'sumatranTiger-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_sword attack.mp3.wav',
+        'sumatranTiger-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_phaser attack.mp3.wav',
+        
+        // Ship sounds
+        'galaxyShip-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_phase cannon.mp3.wav',
+        'galaxyShip-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_photon torpedo.mp3.wav'
+    };
+    
+    // Global playSound function
+    window.playSound = function(character, type) {
+        const soundId = `${character}-${type}`;
+        console.log(`Playing sound: ${soundId}`);
+        
+        // Get the sound file path
+        const soundPath = window.soundMap[soundId];
+        
+        if (soundPath) {
+            console.log(`Loading sound from: ${soundPath}`);
+            
+            // Create a new Audio instance for each sound (prevents caching issues)
+            const sound = new Audio();
+            sound.volume = 0.5; // 50% volume as requested
+            sound.src = soundPath;
+            
+            // Log success or errors
+            sound.addEventListener('canplaythrough', () => {
+                console.log(`Sound loaded successfully: ${soundId}`);
+                sound.play().catch(err => {
+                    console.error(`Error playing sound ${soundId}:`, err);
+                });
+            }, {once: true});
+            
+            sound.addEventListener('error', (e) => {
+                console.error(`Error loading sound ${soundId}:`, e);
+            }, {once: true});
+            
+            // Preload the sound
+            sound.load();
+        } else {
+            console.error(`Sound not defined for: ${soundId}`);
+        }
+    };
+    
+    // Initialize audio context on first user interaction
+    document.addEventListener('click', function initAudioContext() {
+        if (!window.audioContextInitialized) {
+            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (window.AudioContext) {
+                try {
+                    const audioContext = new AudioContext();
+                    console.log('AudioContext initialized');
+                    window.audioContextInitialized = true;
+                } catch (e) {
+                    console.error('Error initializing AudioContext:', e);
+                }
+            }
+            // Remove this event listener after first interaction
+            document.removeEventListener('click', initAudioContext);
+        }
+    }, { once: true });
+    </script>
     <style>
         body {
             margin: 0;
@@ -880,54 +951,8 @@
                 musicPlayerUI.style.boxShadow = '0 0 10px rgba(0, 0, 255, 0.5)';
             });
 
-            // Sound system reverting to what worked previously according to memory
-            window.playSound = function(character, type) {
-                const soundId = `${character}-${type}`;
-                console.log(`Playing sound: ${soundId}`);
-                
-                // Map of sound files using the original file names that worked before
-                const soundMap = {
-                    // Mastiff sounds
-                    'tibetanMastiff-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/dog_attack.mp3.wav',
-                    'tibetanMastiff-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/being attack_hit.mp3.wav',
-                    
-                    // Tiger sounds
-                    'sumatranTiger-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_sword attack.mp3.wav',
-                    'sumatranTiger-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/cat_phaser attack.mp3.wav',
-                    
-                    // Ship sounds
-                    'galaxyShip-attack': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_phase cannon.mp3.wav',
-                    'galaxyShip-special': 'https://raw.githubusercontent.com/Charlo21/Galaxia/main/front-end/assets/sounds/effects/ship_photon torpedo.mp3.wav'
-                };
-                
-                // Get the sound file path
-                const soundPath = soundMap[soundId];
-                
-                if (soundPath) {
-                    console.log(`Loading sound from: ${soundPath}`);
-                    
-                    // Create a new Audio instance for each sound (prevents caching issues)
-                    const sound = new Audio();
-                    sound.volume = 0.5; // 50% volume as requested
-                    sound.src = soundPath;
-                    
-                    // Log success or errors
-                    sound.addEventListener('canplaythrough', () => {
-                        console.log(`Sound loaded successfully: ${soundId}`);
-                    }, {once: true});
-                    
-                    sound.addEventListener('error', (e) => {
-                        console.error(`Error loading sound ${soundId}:`, e);
-                    }, {once: true});
-                    
-                    // Play the sound
-                    sound.play().catch(err => {
-                        console.error(`Error playing sound ${soundId}:`, err);
-                    });
-                } else {
-                    console.error(`Sound not defined for: ${soundId}`);
-                }
-            };
+            // Sound system initialization is now in the head section
+            // to ensure it's available when needed
 
             // Fix for audio elements to ensure they're ready to play
             document.querySelectorAll('audio').forEach(audio => {
