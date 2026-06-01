@@ -37,7 +37,3 @@ Galaxia is transitioning from a single application into a **multi-module civiliz
 ## Website
 
 https://galaxia.help
-
-2. Navigate to the `front-end` directory
-3. Start a local server (e.g., `python -m http.server 8000`)
-4. Open `http://localhost:8000` in your browser
