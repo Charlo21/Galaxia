@@ -20,14 +20,6 @@ To create systems where people, communities, and organizations can **build, part
 
 ---
 
-## Current Components
-
-* 3D interactive simulation environment (prototype layer)
-* Character-based interaction system
-* Early DeFi / Web3 experimentation layer
-
----
-
 ## Direction
 
 Galaxia is transitioning from a single application into a **multi-module civilization infrastructure platform.**
