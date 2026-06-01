@@ -1,39 +1,43 @@
-# Galaxia Game
+# Galaxia 🌌
 
-A 3D web game featuring unique characters with special abilities.
+Civilization-as-a-Service Infrastructure
 
-## Characters
+Galaxia is a modular platform designed to evolve into a full-stack Civilization-as-a-Service system combining:
 
-1. **Tibetan Mastiff**
-   - Guardian's Fury special ability
-   - High health and defense
+* AI-driven systems
+* Blockchain infrastructure
+* Digital identity + governance models
+* Interactive simulation environments
+* Tokenized participation systems
 
-2. **Sumatran Tiger**
-   - Jungle Strike special ability
-   - High speed and attack power
+Originally started as a 3D interactive prototype, Galaxia is evolving into a broader ecosystem for building participatory digital civilizations.
 
-3. **Galaxy Ship**
-   - Nova Blast special ability
-   - Balanced stats with high attack power
+---
 
-## How to Play
+## Vision
 
-1. Select your character by clicking the character buttons
-2. Click to perform normal attacks
-3. Double-click to unleash special abilities
-4. Drag to rotate the view
-5. Scroll to zoom in/out
+To create systems where people, communities, and organizations can **build, participate in, and benefit from shared digital economies and governance structures.**
 
-## Development
+---
 
-Built with:
-- Three.js for 3D rendering
-- ES6 Modules
-- Custom animation system
+## Current Components
 
-## Local Development
+* 3D interactive simulation environment (prototype layer)
+* Character-based interaction system
+* Early DeFi / Web3 experimentation layer
 
-1. Clone the repository
+---
+
+## Direction
+
+Galaxia is transitioning from a single application into a **multi-module civilization infrastructure platform.**
+
+---
+
+## Website
+
+https://galaxia.help
+
 2. Navigate to the `front-end` directory
 3. Start a local server (e.g., `python -m http.server 8000`)
 4. Open `http://localhost:8000` in your browser
