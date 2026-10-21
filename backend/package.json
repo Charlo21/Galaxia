@@ -1,5 +1,7 @@
 {
   "name": "galaxia-backend",
+  "private": true,
+  "license": "UNLICENSED",
   "version": "1.0.0",
   "description": "Backend for Galaxia tap-to-earn game",
   "main": "app.js",
