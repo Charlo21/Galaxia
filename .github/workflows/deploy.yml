@@ -1,28 +1,27 @@
-name: Deploy to GitHub Pages
+# GitHub Pages for this repo is configured as legacy deploy from branch `main` path `/`
+# (see repo Pages settings). Pushing a separate gh-pages branch via peaceiris fails with
+# GITHUB_TOKEN 403 and does not match the live Pages source.
+#
+# Validation lives in ci.yml. This workflow only re-checks that the Pages contract still holds.
+name: Pages source check
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  deploy:
+  pages-source:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-          
-      - name: Install dependencies
+      - uses: actions/checkout@v4
+
+      - name: Confirm Pages root entrypoint exists
         run: |
-          cd front-end
-          npm install
-          
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./front-end
+          test -f index.html
+          test -f js/network.js
+          test -d assets
+          echo "Pages serves main:/ — static root is present; no gh-pages push required."

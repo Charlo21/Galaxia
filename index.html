@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="js/network.js"></script>
     
     <!-- Global sound system -->
     <script>
@@ -184,6 +185,22 @@
             color: #4169E1;
             font-weight: 500;
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        #network-mismatch-prompt {
+            max-width: 260px;
+            padding: 10px 12px;
+            background: #3b1111;
+            color: #ffd7d7;
+            border: 1px solid #c0392b;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.35;
+            text-align: left;
+        }
+
+        #network-mismatch-prompt[hidden] {
+            display: none !important;
         }
 
         #coin-display {
@@ -446,8 +463,9 @@
                 <span>🪙</span>
                 <span id="coin-count">0</span>
             </div>
-            <button id="connect-wallet">Connect Wallet</button>
-            <div id="wallet-status">Not connected</div>
+            <button id="connect-wallet">Connect Wallet (Sepolia)</button>
+            <div id="wallet-status">Not connected — Sepolia only</div>
+            <div id="network-mismatch-prompt" role="alert" hidden></div>
         </div>
         <div id="instructions">
             Click to Attack | Double Click for Special Attack | Drag to Rotate View
@@ -1084,23 +1102,39 @@
             // Update coin display
             document.getElementById('coin-count').textContent = playerCoins;
 
-            // Web3 connection
-            document.getElementById('connect-wallet').addEventListener('click', () => {
-                if (typeof window.ethereum !== 'undefined') {
-                    window.ethereum.request({ method: 'eth_requestAccounts' })
-                        .then(accounts => {
-                            const userAccount = accounts[0];
-                            document.getElementById('wallet-status').textContent = 
-                                `Connected: ${userAccount.substring(0, 6)}...${userAccount.substring(38)}`;
-                            document.getElementById('wallet-status').style.color = '#4CAF50';
-                            document.getElementById('connect-wallet').style.display = 'none';
-                        })
-                        .catch(error => {
-                            console.error('User denied account access', error);
-                        });
-                } else {
+            // Web3 connection — Sepolia-only (chainId 11155111); MAINNET_BLOCKED
+            document.getElementById('connect-wallet').addEventListener('click', async () => {
+                if (typeof window.ethereum === 'undefined') {
                     alert('Please install MetaMask to use crypto features!');
                     window.open('https://metamask.io/download.html', '_blank');
+                    return;
+                }
+                try {
+                    const { account, chainId } = await GalaxiaNetwork.connectSepoliaWallet(window.ethereum);
+                    document.getElementById('wallet-status').textContent =
+                        `Connected (Sepolia ${chainId}): ${account.substring(0, 6)}...${account.substring(38)}`;
+                    document.getElementById('wallet-status').style.color = '#4CAF50';
+                    document.getElementById('connect-wallet').style.display = 'none';
+                    GalaxiaNetwork.attachChainListeners(
+                        window.ethereum,
+                        (reason) => {
+                            document.getElementById('wallet-status').textContent = reason;
+                            document.getElementById('wallet-status').style.color = '#e74c3c';
+                            document.getElementById('connect-wallet').style.display = '';
+                        },
+                        (okChainId) => {
+                            document.getElementById('wallet-status').textContent =
+                                `Connected (Sepolia ${okChainId}): ${account.substring(0, 6)}...${account.substring(38)}`;
+                            document.getElementById('wallet-status').style.color = '#4CAF50';
+                            document.getElementById('connect-wallet').style.display = 'none';
+                        }
+                    );
+                } catch (error) {
+                    console.error('Wallet connect blocked or denied', error);
+                    const message = (error && error.message) || 'Could not connect on Sepolia.';
+                    GalaxiaNetwork.showNetworkMismatchPrompt(message);
+                    document.getElementById('wallet-status').textContent = message;
+                    document.getElementById('wallet-status').style.color = '#e74c3c';
                 }
             });
 

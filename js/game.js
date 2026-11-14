@@ -10,41 +10,56 @@ document.addEventListener('DOMContentLoaded', () => {
     let web3;
     let userAccount;
     
-    // Make connectWallet available globally
+    // Make connectWallet available globally — Sepolia-only; MAINNET_BLOCKED
     window.connectWallet = async function() {
-        if (typeof window.ethereum !== 'undefined') {
-            try {
-                // Request account access
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                userAccount = accounts[0];
-                web3 = new Web3(window.ethereum);
-                
-                // Update UI to show connected wallet
-                const walletStatus = document.getElementById('wallet-status');
-                const connectButton = document.getElementById('connect-wallet');
-                
-                if (walletStatus && connectButton) {
-                    walletStatus.textContent = `Connected: ${userAccount.substring(0, 6)}...${userAccount.substring(38)}`;
-                    walletStatus.style.color = '#4CAF50';
-                    connectButton.style.display = 'none';
-                }
-                
-                // Listen for account changes
-                window.ethereum.on('accountsChanged', function (accounts) {
-                    userAccount = accounts[0];
-                    if (walletStatus) {
-                        walletStatus.textContent = `Connected: ${userAccount.substring(0, 6)}...${userAccount.substring(38)}`;
-                    }
-                });
-                
-                return true;
-            } catch (error) {
-                console.error('User denied account access');
-                return false;
-            }
-        } else {
+        const network = window.GalaxiaNetwork;
+        if (!network) {
+            console.error('GalaxiaNetwork not loaded (js/network.js)');
+            return false;
+        }
+        if (typeof window.ethereum === 'undefined') {
             alert('Please install MetaMask to use crypto features!');
             window.open('https://metamask.io/download.html', '_blank');
+            return false;
+        }
+        try {
+            const { account, chainId } = await network.connectSepoliaWallet(window.ethereum);
+            userAccount = account;
+            web3 = new Web3(window.ethereum);
+
+            const walletStatus = document.getElementById('wallet-status');
+            const connectButton = document.getElementById('connect-wallet');
+
+            if (walletStatus && connectButton) {
+                walletStatus.textContent = `Connected (Sepolia ${chainId}): ${userAccount.substring(0, 6)}...${userAccount.substring(38)}`;
+                walletStatus.style.color = '#4CAF50';
+                connectButton.style.display = 'none';
+            }
+
+            window.ethereum.on('accountsChanged', function (accounts) {
+                userAccount = accounts[0];
+                if (walletStatus && userAccount) {
+                    walletStatus.textContent = `Connected (Sepolia): ${userAccount.substring(0, 6)}...${userAccount.substring(38)}`;
+                }
+            });
+
+            network.attachChainListeners(
+                window.ethereum,
+                (reason) => {
+                    userAccount = null;
+                    web3 = null;
+                    if (walletStatus) {
+                        walletStatus.textContent = reason;
+                        walletStatus.style.color = '#e74c3c';
+                    }
+                    if (connectButton) connectButton.style.display = '';
+                },
+                () => {}
+            );
+
+            return true;
+        } catch (error) {
+            console.error('Wallet connect blocked or denied', error);
             return false;
         }
     };
@@ -339,8 +354,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function sendTokens(amount) {
         if (!userAccount || !web3) return;
-        
-        // Contract address and ABI would go here
+
+        const network = window.GalaxiaNetwork;
+        if (network) {
+            const chainId = await web3.eth.getChainId();
+            const reason = network.getNetworkBlockReason(chainId);
+            if (reason) {
+                network.showNetworkMismatchPrompt(reason);
+                console.error(reason);
+                return;
+            }
+        }
+
+        // Contract address and ABI would go here (Sepolia only)
         const contractAddress = '0x...'; // Your token contract address
         const contract = new web3.eth.Contract(tokenABI, contractAddress);
         

@@ -1,30 +1,23 @@
-# Galaxia 🌌
+# Galaxia
 
-Civilization-as-a-Service Infrastructure
+Interactive 3D web prototype in the Galaxia ecosystem.
 
-Galaxia is a modular platform designed to evolve into a full-stack Civilization-as-a-Service system combining:
+This repository hosts the original browser game (static `index.html` + assets). Wallet connect is **Ethereum Sepolia only** (`chainId` `11155111`, public RPC `https://rpc.sepolia.org`). **MAINNET_BLOCKED** is enforced; a visible network-mismatch prompt appears when the wallet is on any other chain.
 
-* AI-driven systems
-* Blockchain infrastructure
-* Digital identity + governance models
-* Interactive simulation environments
-* Tokenized participation systems
+No production customers, revenue figures, or mainnet claims are asserted here.
 
-Originally started as a 3D interactive prototype, Galaxia is evolving into a broader ecosystem for building participatory digital civilizations.
+## Local
 
----
+```bash
+npm install
+npm test
+npm start
+```
 
-## Vision
+## Deploy
 
-To create systems where people, communities, and organizations can **build, participate in, and benefit from shared digital economies and governance structures.**
-
----
-
-## Direction
-
-Galaxia is transitioning from a single application into a **multi-module civilization infrastructure platform.**
-
----
+- GitHub Pages serves branch `main` at path `/` (repo root).
+- Vercel: create/link project **`galaxia`** with **Root Directory** `.` (repo root). `vercel.json` sets a static output at `.`. This agent has no Vercel credentials.
 
 ## Website
 

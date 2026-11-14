@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install front-end dependencies
+        working-directory: front-end
+        run: npm ci
+
+      - name: Run Sepolia / MAINNET_BLOCKED tests
+        run: npm test
+
+      - name: Verify static site entrypoints
+        run: |
+          test -f index.html
+          test -f js/network.js
+          test -f front-end/index.html
+          test -f package.json
+          test -f front-end/package.json
+          # GitHub Pages serves from main branch root (/); keep that contract honest
+          grep -q 'GalaxiaNetwork\|js/network.js' index.html
+          grep -q 'MAINNET_BLOCKED' js/network.js
+          grep -q '11155111' js/network.js
