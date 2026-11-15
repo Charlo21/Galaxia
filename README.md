@@ -38,3 +38,11 @@ See [LICENSE](LICENSE). Proprietary: Copyright (c) 2025-2026 Charles Mouton. All
 ## Security
 
 See [SECURITY.md](SECURITY.md). Report vulnerabilities to hello@galaxia.help. This repository does not offer a bug bounty and does not claim any audit or certification.
+
+## What this is not
+
+This repository does not claim a live mainnet product, a revenue figure, an independent audit, or a certification (including SOC 2). Where a dApp or wallet flow exists, treat it as testnet / Sepolia unless the text above says otherwise.
+
+## Support
+
+Security reports: see [SECURITY.md](SECURITY.md) and email hello@galaxia.help. Please do not file public issues for vulnerabilities.
