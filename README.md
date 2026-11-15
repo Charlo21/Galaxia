@@ -22,3 +22,19 @@ npm start
 ## Website
 
 https://galaxia.help
+
+## Stack
+
+Static HTML/JS with Three.js. No application build step (`npm start` uses `npx serve`).
+
+## Environment
+
+No required secrets. Wallet connect, when used, is Sepolia-only (`11155111`) with MAINNET_BLOCKED as described above.
+
+## License
+
+See [LICENSE](LICENSE). Proprietary: Copyright (c) 2025-2026 Charles Mouton. All rights reserved.
+
+## Security
+
+See [SECURITY.md](SECURITY.md). Report vulnerabilities to hello@galaxia.help. This repository does not offer a bug bounty and does not claim any audit or certification.
